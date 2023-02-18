@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+cd "$SYNC/notes" || exit 1
+
+create_note() {
+    [[ -n $2 ]] && printf "\n\n%s" "$2" >>"$1"
+    $EDITOR "$1"
+}
+
+select_note() {
+    if [[ -z "$1" ]]; then
+        sel=$(rg --color ansi "" | fzf --ansi --print-query --bind=ctrl-g:print-query | tail -1)
+    else
+        sel=$(rg -I -N -l --color ansi "$1" | fzf --ansi --print-query --bind=ctrl-g:print-query | tail -1)
+    fi
+    [[ -z $sel ]] && exit 1
+    file=$(echo "$sel" | cut -d':' -f1 | tr ' ' '-')
+    create_note "$file" "$1"
+}
+
+select_tag() {
+    tags=$(rg -I -N "#[A-Za-z]+$" | sort -u | gum choose)
+    [[ -z $tags ]] && exit 1
+    select_note "$tags"
+}
+
+if ! [[ $# -gt 0 ]]; then
+    select_note ''
+else
+    case "$1" in
+        tag)
+            select_tag
+            ;;
+        *)
+            echo "dio"
+            ;;
+    esac
+fi
