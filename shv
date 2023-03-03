@@ -1,35 +1,55 @@
 #!/usr/bin/env bash
 
-cd "$SYNC/notes" || exit 1
+fzf="fzf --ansi --print-query --bind=ctrl-g:print-query"
 
-create_note() {
-    [[ -n $2 ]] && printf "\n\n%s" "$2" >>"$1"
+cd "$NOTES" || exit 1
+
+edit_note() {
+    [[ -n $2 ]] && ! [[ -f $1 ]] \
+        && printf "\n\n%s" "$2" >>"$1"
     $EDITOR "$1"
 }
 
 select_note() {
-    if [[ -z "$1" ]]; then
-        sel=$(rg --color ansi "" | fzf --ansi --print-query --bind=ctrl-g:print-query | tail -1)
-    else
-        sel=$(rg -I -N -l --color ansi "$1" | fzf --ansi --print-query --bind=ctrl-g:print-query | tail -1)
-    fi
+    [[ -z $1 ]] \
+        && sel=$(rg --color ansi "" | $fzf | tail -1) \
+        || sel=$(rg -l --color ansi "$1" | $fzf --preview "bat {}" | tail -1)
     [[ -z $sel ]] && exit 1
     file=$(echo "$sel" | cut -d':' -f1 | tr ' ' '-')
-    create_note "$file" "$1"
+    ! [[ -f $file ]] && file="$file.md"
+    edit_note "$file" "$1"
 }
 
 select_tag() {
-    tags=$(rg -I -N "#[A-Za-z]+$" | sort -u | gum choose)
+    tags=$(rg -I -N -o "#[^\s]+$" | sort -u | $fzf)
+    tags=$(echo "$tags" | tr -d '\n')
     [[ -z $tags ]] && exit 1
     select_note "$tags"
 }
 
+update_links() {
+    files=$(rg -l "\[.*\]\($1\)")
+    for i in $files; do
+        sed -i "s/$1/$2/g" "$i"
+    done
+}
+
+rename() {
+    [[ -f $1 ]] \
+        && mv "$1" "$2" \
+        && update_links "$1" "$2" \
+        || echo "Il file $1 non esiste"
+}
+
 if ! [[ $# -gt 0 ]]; then
-    select_note ''
+    select_note
 else
     case "$1" in
         tag)
             select_tag
+            ;;
+        mv)
+            rename "$2" "$3"
             ;;
         *)
             echo "dio"
