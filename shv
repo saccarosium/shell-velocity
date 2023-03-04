@@ -4,8 +4,11 @@ set -e
 shopt -s extglob
 
 : "${EDITOR:=nano}"
-: "${PICKER="fzf --ansi --print-query --bind=ctrl-g:print-query"}"
-: "${NOTES_EXT=.md}"
+: "${PICKER:="fzf --ansi --print-query --bind=ctrl-g:print-query"}"
+: "${NOTES:=$HOME/Documents}"
+: "${NOTES_EXT:=.md}"
+
+echoerr() { echo "$@" 1>&2; }
 
 _format() {
     local str
@@ -36,8 +39,7 @@ _get_files() {
 # Updates standard markdown links after renaming
 _update_links() {
     local files
-    files=$(_get_files)
-    files=$(echo "$files" | xargs -I {} grep -l -E "\[.*\]\($1\)" {})
+    files=$(_get_files | xargs -I {} grep -l -E "\[.*\]\($1\)" {})
     count=$(echo "$files" | wc -l)
     for i in $files; do
         if [[ $OSTYPE == "darwin"* ]]; then
@@ -51,9 +53,29 @@ _update_links() {
 
 _get_tags() {
     # Does a recursive
-    tags=$(grep -h -r -E -o --include=*"$NOTES_EXT" "#[a-z0-9_]+" | sort -u)
-    [[ -n $tags ]] \
-        && printf "%s\n" "$tags"
+    tags=$(_get_files | xargs -I {} grep -o -E "#[a-z0-9_]+" {} | sort -u)
+    [[ -n $tags ]] && printf "%s\n" "$tags"
+}
+
+select_date() {
+    mkdir -p ./diary >/dev/null
+    cd diary
+    case "$1" in
+        today | t)
+            : "$(date +'%Y-%m-%d')".md
+            ;;
+        tomorow | tom | tm)
+            : "$(date --date="tomorrow" +"%Y-%m-%d")".md
+            ;;
+        yesterday | ye)
+            : "$(date --date="yesterday" +"%Y-%m-%d")".md
+            ;;
+        *)
+            echoerr "\"$1\" is not an legal option"
+            exit 0
+            ;;
+    esac
+    edit_note "$_" ""
 }
 
 select_tag() {
@@ -64,9 +86,11 @@ select_tag() {
 }
 
 select_note() {
-    [[ -z $1 ]] \
-        && sel=$(grep -r "" | $PICKER | tail -1) \
-        || sel=$(grep -l -r "$1" | $PICKER --preview "bat {}" | tail -1)
+    if [[ -z $2 ]]; then
+        sel=$(_get_files | xargs -I {} grep -H "" {} | $PICKER | tail -1)
+    else
+        sel=$(_get_files | xargs -I {} grep -l -H "$2" {} | $PICKER --preview "bat {}" | tail -1)
+    fi
     [[ -z $sel ]] && exit 0
     file=$(_format "$sel" | cut -d':' -f1)
     ! [[ -f $file ]] && file="$file.$NOTES_EXT"
@@ -86,19 +110,22 @@ rename() {
         echo "Updated $updates links"
         # _update_links "$1" "$2"
     else
-        echo "$1 doesn't exist"
+        echoerr "\"$1\" doesn't exist"
     fi
 }
 
 main() {
     cd "$NOTES"
-    local skip_edit
-    skip_edit=false
+    local skip_edit=false
     if [[ $# -gt 0 ]]; then
         case "$1" in
             tags)
-                tag=$(select_tag)
-                [[ -z $tag ]] && exit 0
+                query=$(select_tag)
+                [[ -z $query ]] && exit 0
+                ;;
+            diary)
+                select_date "$2"
+                skip_edit=true
                 ;;
             mv)
                 rename "$2" "$3"
@@ -112,11 +139,10 @@ main() {
     fi
 
     if [[ $skip_edit != true ]]; then
-        note=$(select_note "$tag")
+        note=$(select_note "$query")
         [[ -z $note ]] && exit 0
-        edit_note "$note" "$tag"
+        edit_note "$note" "$query"
     fi
-    exit 0
 }
 
 main "$@"
