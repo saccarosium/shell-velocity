@@ -2,14 +2,17 @@
 
 set -e
 shopt -s extglob
+shopt -s globstar
 
 : "${EDITOR:=nano}"
-: "${PICKER:="fzf --ansi --print-query --bind=ctrl-g:print-query"}"
-: "${NOTES:=$HOME/Documents}"
-: "${NOTES_EXT:=.md}"
+: "${SHV_PICKER:="fzf --ansi --print-query --bind=ctrl-g:print-query"}"
+: "${SHV_PATH:=$HOME/Documents/notes}"
+: "${SHV_EXT:=md}"
 
+# Echo to stderr
 echoerr() { echo "$@" 1>&2; }
 
+# Format string in a more usefull state
 _format() {
     local str
     # Remove all leading white-space.
@@ -28,15 +31,9 @@ _format() {
     printf "%s" "$str"
 }
 
-_get_files() {
-    find . \
-        -type f \
-        -name "*.md" \
-        -not -path "./.obsidian/*" \
-        -not -path "./.git/*"
-}
-
 # Updates standard markdown links after renaming
+# $1: pattern to replace
+# $2: string that replace pattern
 _update_links() {
     local files
     files=$(_get_files | xargs -I {} grep -l -E "\[.*\]\($1\)" {})
@@ -51,12 +48,24 @@ _update_links() {
     printf "%s\n" "$count"
 }
 
+# List files in SHV_PATH
+_get_files() {
+    find . \
+        -type f \
+        -name "*.$SHV_EXT" \
+        -not -path "./.obsidian/*" \
+        -not -path "./.git/*"
+}
+
+# List markdown tags in SHV_PATH
 _get_tags() {
     # Does a recursive
     tags=$(_get_files | xargs -I {} grep -o -E "#[a-z0-9_]+" {} | sort -u)
     [[ -n $tags ]] && printf "%s\n" "$tags"
 }
 
+# Handler to select and edit day specific note
+# $1: subcommands
 select_date() {
     mkdir -p ./diary >/dev/null
     cd diary
@@ -78,44 +87,54 @@ select_date() {
     edit_note "$_" ""
 }
 
+# Handler to select a markdown tag
 select_tag() {
     local sel
-    sel=$(_get_tags | $PICKER)
+    sel=$(_get_tags | $SHV_PICKER)
     sel=$(_format "$sel")
     printf "%s" "$sel"
 }
 
+# Handler to search/create note
+# $1: Additional query to filter note search
 select_note() {
-    if [[ -z $2 ]]; then
-        sel=$(_get_files | xargs -I {} grep -H "" {} | $PICKER | tail -1)
+    if [[ -z $1 ]]; then
+        sel=$(_get_files | xargs -I {} grep -H "" {} | $SHV_PICKER | tail -1)
     else
-        sel=$(_get_files | xargs -I {} grep -l -H "$2" {} | $PICKER --preview "bat {}" | tail -1)
+        sel=$(_get_files | xargs -I {} grep -l -H "$1" {} | $SHV_PICKER | tail -1)
     fi
     [[ -z $sel ]] && exit 0
     file=$(_format "$sel" | cut -d':' -f1)
-    ! [[ -f $file ]] && file="$file.$NOTES_EXT"
+    ! [[ -f $file ]] && file="$file.$SHV_EXT"
     printf "%s\n" "$file"
 }
 
+# Edit note with EDITOR
+# $1: Path to file to edit
+# $2: Tag to insert ot the bottom of the file
 edit_note() {
     [[ -n $2 ]] && ! [[ -f $1 ]] \
         && printf "\n\n%s" "$2" >>"$1"
     $EDITOR "$1"
 }
 
+# Rename note
+# $1: path to note to be renamed
+# $2: path to renamed note
 rename() {
     if [[ -f $1 ]]; then
         mv "$1" "$2"
         updates=$(_update_links "$1" "$2")
         echo "Updated $updates links"
-        # _update_links "$1" "$2"
     else
         echoerr "\"$1\" doesn't exist"
     fi
 }
 
+# Main function
+# $1: subcommands
 main() {
-    cd "$NOTES"
+    cd "$SHV_PATH"
     local skip_edit=false
     if [[ $# -gt 0 ]]; then
         case "$1" in
