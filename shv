@@ -1,8 +1,77 @@
 #!/usr/bin/env bash
 
-fzf="fzf --ansi --print-query --bind=ctrl-g:print-query"
+set -e
+shopt -s extglob
 
-cd "$NOTES" || exit 1
+: "${EDITOR:=nano}"
+: "${PICKER="fzf --ansi --print-query --bind=ctrl-g:print-query"}"
+: "${NOTES_EXT=.md}"
+
+_format() {
+    local str
+    # Remove all leading white-space.
+    # '${1%%[![:space:]]*}': Strip everything but leading white-space.
+    # '${1#${XXX}}': Remove the white-space from the start of the string.
+    str="${1#${1%%[![:space:]]*}}"
+    # Remove all trailing white-space.
+    # '${trim##*[![:space:]]}': Strip everything but trailing white-space.
+    # '${trim%${XXX}}': Remove the white-space from the end of the string.
+    str="${str%${str##*[![:space:]]}}"
+    # Removes EOL characters
+    str="${str%%\n}"
+    # Substitute spaces with dashes
+    str="${str//\ /-}"
+
+    printf "%s" "$str"
+}
+
+_get_files() {
+    find . \
+        -type f \
+        -name "*.md" \
+        -not -path "./.obsidian/*" \
+        -not -path "./.git/*"
+}
+
+# Updates standard markdown links after renaming
+_update_links() {
+    local files
+    files=$(_get_files)
+    files=$(echo "$files" | xargs -I {} grep -l -E "\[.*\]\($1\)" {})
+    count=$(echo "$files" | wc -l)
+    for i in $files; do
+        if [[ $OSTYPE == "darwin"* ]]; then
+            /usr/bin/sed -i "" "s/$1/$2/g" "$i"
+        else
+            sed -i "s/$1/$2/g" "$i"
+        fi
+    done
+    printf "%s\n" "$count"
+}
+
+_get_tags() {
+    # Does a recursive
+    tags=$(grep -h -r -E -o --include=*"$NOTES_EXT" "#[a-z0-9_]+" | sort -u)
+    [[ -n $tags ]] \
+        && printf "%s\n" "$tags"
+}
+
+select_tag() {
+    local sel
+    sel=$(_get_tags | $PICKER)
+    sel=$(_format "$sel")
+    printf "%s" "$sel"
+}
+
+select_note() {
+    [[ -z $1 ]] \
+        && sel=$(grep -r "" | $PICKER | tail -1) \
+        || sel=$(grep -l -r "$1" | $PICKER --preview "bat {}" | tail -1)
+    [[ -z $sel ]] && exit 0
+    file=$(_format "$sel" | cut -d':' -f1)
+    ! [[ -f $file ]] && file="$file.$NOTES_EXT"
+    printf "%s\n" "$file"
+}
 
 edit_note() {
     [[ -n $2 ]] && ! [[ -f $1 ]] \
@@ -10,49 +79,44 @@ edit_note() {
     $EDITOR "$1"
 }
 
-select_note() {
-    [[ -z $1 ]] \
-        && sel=$(rg --color ansi "" | $fzf | tail -1) \
-        || sel=$(rg -l --color ansi "$1" | $fzf --preview "bat {}" | tail -1)
-    [[ -z $sel ]] && exit 1
-    file=$(echo "$sel" | cut -d':' -f1 | tr ' ' '-')
-    ! [[ -f $file ]] && file="$file.md"
-    edit_note "$file" "$1"
-}
-
-select_tag() {
-    tags=$(rg -I -N -o "#[^\s]+$" | sort -u | $fzf)
-    tags=$(echo "$tags" | tr -d '\n')
-    [[ -z $tags ]] && exit 1
-    select_note "$tags"
-}
-
-update_links() {
-    files=$(rg -l "\[.*\]\($1\)")
-    for i in $files; do
-        sed -i "s/$1/$2/g" "$i"
-    done
-}
-
 rename() {
-    [[ -f $1 ]] \
-        && mv "$1" "$2" \
-        && update_links "$1" "$2" \
-        || echo "Il file $1 non esiste"
+    if [[ -f $1 ]]; then
+        mv "$1" "$2"
+        updates=$(_update_links "$1" "$2")
+        echo "Updated $updates links"
+        # _update_links "$1" "$2"
+    else
+        echo "$1 doesn't exist"
+    fi
 }
 
-if ! [[ $# -gt 0 ]]; then
-    select_note
-else
-    case "$1" in
-        tag)
-            select_tag
-            ;;
-        mv)
-            rename "$2" "$3"
-            ;;
-        *)
-            echo "dio"
-            ;;
-    esac
-fi
+main() {
+    cd "$NOTES"
+    local skip_edit
+    skip_edit=false
+    if [[ $# -gt 0 ]]; then
+        case "$1" in
+            tags)
+                tag=$(select_tag)
+                [[ -z $tag ]] && exit 0
+                ;;
+            mv)
+                rename "$2" "$3"
+                skip_edit=true
+                ;;
+            *)
+                echo "dio"
+                skip_edit=true
+                ;;
+        esac
+    fi
+
+    if [[ $skip_edit != true ]]; then
+        note=$(select_note "$tag")
+        [[ -z $note ]] && exit 0
+        edit_note "$note" "$tag"
+    fi
+    exit 0
+}
+
+main "$@"
