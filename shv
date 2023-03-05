@@ -5,7 +5,7 @@ shopt -s extglob
 shopt -s globstar
 
 : "${EDITOR:=nano}"
-: "${SHV_PICKER:="fzf --ansi --print-query --bind=ctrl-g:print-query"}"
+: "${SHV_PICKER:="fzf --print-query --bind=alt-enter:print-query"}"
 : "${SHV_PATH:=$HOME/Documents/notes}"
 : "${SHV_EXT:=md}"
 
@@ -29,23 +29,6 @@ _format() {
     str="${str//\ /-}"
 
     printf "%s" "$str"
-}
-
-# Updates standard markdown links after renaming
-# $1: pattern to replace
-# $2: string that replace pattern
-_update_links() {
-    local files
-    files=$(_get_files | xargs -I {} grep -l -E "\[.*\]\($1\)" {})
-    count=$(echo "$files" | wc -l)
-    for i in $files; do
-        if [[ $OSTYPE == "darwin"* ]]; then
-            /usr/bin/sed -i "" "s/$1/$2/g" "$i"
-        else
-            sed -i "s/$1/$2/g" "$i"
-        fi
-    done
-    printf "%s\n" "$count"
 }
 
 # List files in SHV_PATH
@@ -118,19 +101,6 @@ edit_note() {
     $EDITOR "$1"
 }
 
-# Rename note
-# $1: path to note to be renamed
-# $2: path to renamed note
-rename() {
-    if [[ -f $1 ]]; then
-        mv "$1" "$2"
-        updates=$(_update_links "$1" "$2")
-        echo "Updated $updates links"
-    else
-        echoerr "\"$1\" doesn't exist"
-    fi
-}
-
 # Main function
 # $1: subcommands
 main() {
@@ -144,10 +114,6 @@ main() {
                 ;;
             diary)
                 select_date "$2"
-                skip_edit=true
-                ;;
-            mv)
-                rename "$2" "$3"
                 skip_edit=true
                 ;;
             *)

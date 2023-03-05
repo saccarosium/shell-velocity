@@ -32,7 +32,6 @@ chmod +x ~/.local/bin/shv
 shv # select a note
 shv tags # list all notes with specific tag
 shv diary <yesterday|today|tomorrow> # edit selected date note
-shv mv # rename note and optionaly update markdown links to the note
 ```
 
 ## Customization
@@ -42,7 +41,7 @@ shv mv # rename note and optionaly update markdown links to the note
 export SHV_PATH="$HOME/Documents/notes"
 
 # Exention used for the notes
-SHV_EXT="md"
+export SHV_EXT="md"
 
 # Picker used to select notes
 export SHV_PICKER="fzf --ansi --print-query --bind=ctrl-g:print-query"
