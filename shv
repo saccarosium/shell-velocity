@@ -5,9 +5,12 @@ shopt -s extglob
 shopt -s globstar
 
 : "${EDITOR:=nano}"
-: "${SHV_PICKER:="fzf --print-query --bind=alt-enter:print-query"}"
+: "${SHV_PICKER:="fzf --ansi --print-query --bind=alt-enter:print-query"}"
 : "${SHV_PATH:=$HOME/Documents/notes}"
+: "${SHV_DIARY_PATH:=$SHV_PATH/diary}"
 : "${SHV_EXT:=md}"
+: "${SHV_TAG_EXPR:=#[a-z0-9_]+}"
+: "${SHV_DATE_FMT:=%Y-%m-%d}"
 
 # Echo to stderr
 echoerr() { echo "$@" 1>&2; }
@@ -31,9 +34,10 @@ _format() {
     printf "%s" "$str"
 }
 
-# List files in SHV_PATH
+# List files in dir
+
 _get_files() {
-    find . \
+    find "$1" \
         -type f \
         -name "*.$SHV_EXT" \
         -not -path "./.obsidian/*" \
@@ -43,31 +47,21 @@ _get_files() {
 # List markdown tags in SHV_PATH
 _get_tags() {
     # Does a recursive
-    tags=$(_get_files | xargs -I {} grep -o -E "#[a-z0-9_]+" {} | sort -u)
+    tags=$(_get_files "$SHV_PATH" | xargs -I {} grep -o -E "$SHV_TAG_EXPR" {} | sort -u)
     [[ -n $tags ]] && printf "%s\n" "$tags"
 }
 
-# Handler to select and edit day specific note
-# $1: subcommands
-select_date() {
-    mkdir -p ./diary >/dev/null
-    cd diary
-    case "$1" in
-        today | t)
-            : "$(date +'%Y-%m-%d')".md
-            ;;
-        tomorow | tom | tm)
-            : "$(date --date="tomorrow" +"%Y-%m-%d")".md
-            ;;
-        yesterday | ye)
-            : "$(date --date="yesterday" +"%Y-%m-%d")".md
-            ;;
-        *)
-            echoerr "\"$1\" is not an legal option"
-            exit 0
-            ;;
-    esac
-    edit_note "$_" ""
+# Returns the date of selected day by standard of date command
+# $1: date
+_get_date() {
+    printf "%s" "$(date --date="$1" +"$SHV_DATE_FMT")"
+}
+
+# Returns the path to note of specified day
+# $1: date
+_get_diary_note() {
+    date=$(_get_date "$1")
+    printf "%s/%s.%s" "$SHV_DIARY_PATH" "$date" "$SHV_EXT"
 }
 
 # Handler to select a markdown tag
@@ -78,17 +72,28 @@ select_tag() {
     printf "%s" "$sel"
 }
 
+# Select/create a date file
+select_date() {
+    local sel
+    sel=$(_get_files "$SHV_DIARY_PATH" | $SHV_PICKER | tail -1)
+    [[ -z $sel ]] && exit 0
+    file=$(_format "$sel")
+    ! [[ -f $file ]] && file="$SHV_DIARY_PATH/$file.$SHV_EXT"
+
+    printf "%s" "$sel"
+}
+
 # Handler to search/create note
 # $1: Additional query to filter note search
 select_note() {
     if [[ -z $1 ]]; then
-        sel=$(_get_files | xargs -I {} grep -H "" {} | $SHV_PICKER | tail -1)
+        sel=$(_get_files "$SHV_PATH" | xargs -I {} grep -H "" {} | $SHV_PICKER | tail -1)
     else
-        sel=$(_get_files | xargs -I {} grep -l -H "$1" {} | $SHV_PICKER | tail -1)
+        sel=$(_get_files "$SHV_PATH" | xargs -I {} grep -l -H "$1" {} | $SHV_PICKER | tail -1)
     fi
     [[ -z $sel ]] && exit 0
     file=$(_format "$sel" | cut -d':' -f1)
-    ! [[ -f $file ]] && file="$file.$SHV_EXT"
+    ! [[ -f $file ]] && file="$SHV_PATH/$file.$SHV_EXT"
     printf "%s\n" "$file"
 }
 
@@ -104,30 +109,35 @@ edit_note() {
 # Main function
 # $1: subcommands
 main() {
-    cd "$SHV_PATH"
-    local skip_edit=false
-    if [[ $# -gt 0 ]]; then
-        case "$1" in
-            tags)
-                query=$(select_tag)
-                [[ -z $query ]] && exit 0
-                ;;
-            diary)
-                select_date "$2"
-                skip_edit=true
-                ;;
-            *)
-                echo "dio"
-                skip_edit=true
-                ;;
-        esac
-    fi
+    case "$1" in
+        tags)
+            query=$(select_tag)
+            [[ -z $query ]] && exit 0
+            note=$(select_note "$query")
+            ;;
+        diary)
+            note=$(select_date)
+            ;;
+        today | t)
+            note="$(_get_diary_note 'today')"
+            ;;
+        tomorrow | tom | tm)
+            note="$(_get_diary_note 'tomorrow')"
+            ;;
+        yesterday | ye | y)
+            note="$(_get_diary_note 'yesterday')"
+            ;;
+        "")
+            note=$(select_note "")
+            ;;
+        *)
+            echo "dio"
+            ;;
+    esac
 
-    if [[ $skip_edit != true ]]; then
-        note=$(select_note "$query")
-        [[ -z $note ]] && exit 0
-        edit_note "$note" "$query"
-    fi
+    cd "$SHV_PATH"
+    [[ -z $note ]] && exit 0
+    edit_note "$note" "$query"
 }
 
 main "$@"
