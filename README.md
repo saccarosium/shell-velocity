@@ -8,7 +8,7 @@ https://user-images.githubusercontent.com/96259932/223130698-f870c17c-f307-40c0-
 
 * Removes cognitive load by combining the note creation and note searching
 * Customizable (use your preffered fuzzy finder or file picker; see [tested pickers](https://github.com/saccarosium/shell-velocity/wiki/Tested-Pickers))
-* Uses wather editor you want (even [Visual Studio Code]()!)
+* Uses wather editor you want (even [Visual Studio Code](https://github.com/saccarosium/shell-velocity/wiki/Visual-Studio-Code)!)
 * Portable (runs everywhere bash run, even on the preinstalled one on OSX)
 * Minimal (only requires bash and a picker of your choice)
 
