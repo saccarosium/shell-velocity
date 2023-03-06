@@ -12,8 +12,10 @@ shopt -s globstar
 : "${SHV_EXT:=md}"
 : "${SHV_TAG_EXPR:=#[a-z0-9_]+}"
 : "${SHV_DATE_FMT:=%Y-%m-%d}"
+: "${SHV_AUTO_CD:=true}"
 
-help() { cat << EOF
+help() {
+    cat <<EOF
 shell velocity an efficient note taking utility
 shv [-h|--help] <action>
 
@@ -118,7 +120,7 @@ select_note() {
 edit_note() {
     [[ -n $2 ]] && ! [[ -f $1 ]] \
         && printf "\n\n%s" "$2" >>"$1"
-    $EDITOR "$1"
+    $SHV_EDITOR "$1"
 }
 
 # Main function
@@ -154,7 +156,9 @@ main() {
             ;;
     esac
 
-    cd "$SHV_PATH"
+    [[ $SHV_AUTO_CD == true ]] \
+        && cd "$SHV_PATH"
+
     [[ -z $note ]] && exit 0
     edit_note "$note" "$query"
 }

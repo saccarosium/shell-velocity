@@ -48,6 +48,9 @@ shv <yesterday | ye | y> # edit yesterday diary note
 > All the regex used here needs to be POSIX compatible.
 
 ```bash
+# If you want that your editor pwd is in the SHV_PATH
+export SHV_AUTO_CD=true
+
 # Path to notes
 export SHV_PATH="$HOME/Documents/notes"
 
