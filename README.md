@@ -1,6 +1,6 @@
 # :rocket: Shell Velocity
 
-![demo](assets/demo.mov)
+![](assets/demo.mp4)
 
 A portable notational velocity for your shell written in `bash`.
 
