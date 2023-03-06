@@ -1,8 +1,8 @@
 # :rocket: Shell Velocity
 
-![](assets/demo.mp4)
-
 A portable notational velocity for your shell written in `bash`.
+
+https://user-images.githubusercontent.com/96259932/223130698-f870c17c-f307-40c0-b48f-050173bf3d18.mp4
 
 ## Feauteres
 
