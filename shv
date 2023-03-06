@@ -4,7 +4,7 @@ set -e
 shopt -s extglob
 shopt -s globstar
 
-: "${EDITOR:=nano}"
+: "${SHV_EDITOR:=EDITOR:=nano}"
 : "${SHV_PICKER:="fzf --ansi --print-query --bind=alt-enter:print-query"}"
 : "${SHV_PATH:=$HOME/Documents/notes}"
 : "${SHV_DIARY_PATH:=$SHV_PATH/diary}"
@@ -103,7 +103,7 @@ select_note() {
 edit_note() {
     [[ -n $2 ]] && ! [[ -f $1 ]] \
         && printf "\n\n%s" "$2" >>"$1"
-    $EDITOR "$1"
+    $SHV_EDITOR "$1"
 }
 
 # Main function

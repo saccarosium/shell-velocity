@@ -6,7 +6,7 @@ A portable notational velocity for your shell written in `bash`.
 
 * Removes cognitive load by combining the note creation and note searching
 * Customizable (use your preffered fuzzy finder or file picker; see [tested pickers](https://github.com/saccarosium/shell-velocity/wiki/Tested-Pickers))
-* Uses wather editor you want (via the `EDITOR` enviroment variable)
+* Uses wather editor you want (even [Visual Studio Code]()!)
 * Portable (runs everywhere bash run, even on the preinstalled one on OSX)
 * Minimal (only requires bash and a picker of your choice)
 
