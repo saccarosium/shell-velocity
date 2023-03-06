@@ -4,13 +4,28 @@ set -e
 shopt -s extglob
 shopt -s globstar
 
-: "${SHV_EDITOR:=EDITOR:=nano}"
+: "${EDITOR:=nano}"
+: "${SHV_EDITOR:=$EDITOR}"
 : "${SHV_PICKER:="fzf --ansi --print-query --bind=alt-enter:print-query"}"
 : "${SHV_PATH:=$HOME/Documents/notes}"
 : "${SHV_DIARY_PATH:=$SHV_PATH/diary}"
 : "${SHV_EXT:=md}"
 : "${SHV_TAG_EXPR:=#[a-z0-9_]+}"
 : "${SHV_DATE_FMT:=%Y-%m-%d}"
+
+help() { cat << EOF
+shell velocity an efficient note taking utility
+shv [-h|--help] <action>
+
+actions:
+  select <default>
+  tags
+  diary
+    yesterday
+    today
+    tomorrow
+EOF
+}
 
 # Echo to stderr
 echoerr() { echo "$@" 1>&2; }
@@ -103,7 +118,7 @@ select_note() {
 edit_note() {
     [[ -n $2 ]] && ! [[ -f $1 ]] \
         && printf "\n\n%s" "$2" >>"$1"
-    $SHV_EDITOR "$1"
+    $EDITOR "$1"
 }
 
 # Main function
@@ -130,8 +145,12 @@ main() {
         "")
             note=$(select_note "")
             ;;
+        -h | --help)
+            help
+            ;;
         *)
-            echo "dio"
+            echo "sh: $1 unrecognized option"
+            help
             ;;
     esac
 
