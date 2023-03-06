@@ -41,11 +41,11 @@ shv <yesterday | ye | y> # edit yesterday diary note
 
 ## Customization
 
-> **note**
+> **Note**
 > The values of the variables below are the defaults.
 
-> **warning**
-> All the been used here needs to be POSIX compatible.
+> **Warning**
+> All the regex used here needs to be POSIX compatible.
 
 ```bash
 # Path to notes
