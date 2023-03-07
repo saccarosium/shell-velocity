@@ -11,8 +11,7 @@ video::https://user-images.githubusercontent.com/96259932/223130698-f870c17c-f30
 * Uses wather editor you want (even https://github.com/saccarosium/shell-velocity/wiki/Visual-Studio-Code[Visual Studio Code])
 * Portable (runs on every POSIX compatible OS, see https://github.com/saccarosium/shell-velocity/wiki/Tested-OSes[tested OSes])
 * Minimal (only a POSIX shell and the picker of your choice)
-* Unintrusive (use markdown by default, but your preferred markup language such as: https://orgmode.org/[org], https://github.com/nvim-neorg/neorg[neorg], rest, https://asciidoc.org/[adoc], etc)
-
+* Unintrusive (use markdown by default, but works also with your preferred markup languages such as: https://orgmode.org/[org], https://github.com/nvim-neorg/neorg[neorg], rest, https://asciidoc.org/[adoc], etc)
 
 == Dependencies
 
@@ -33,6 +32,10 @@ chmod +x ~/.local/bin/shv
 
 == Usage
 
+NOTE: Every subcommand that uses your `$SHV_PICKER` is capable of creating a new file directly from the picker if not match is found.
+
+=== Available commands
+
 [,bash]
 ----
 shv # select a note
@@ -43,11 +46,32 @@ shv [tomorrow | tom | tm] <label> # edit tomorrow diary note
 shv [yesterday | ye | y] <label> # edit yesterday diary note
 ----
 
+==== no subcommand
+
+Grepes all the files with your selected extention in your `$SHV_PATH`. If no match is found, or you use the keybinding to create a note, a new note will be created.
+
+==== tags
+
+Searches with the regular expression defined in `$SHV_TAG_EXPR` in your `$SHV_PATH` and then make your select a list of file that contains that tag. If no match is found, or you use the keybinding to create a note, a new note will be created with the selected tags at the bottom.
+
+==== diary
+
+Searches in your `$SHV_DIARY_PATH` for notes, and uses your picker to select what daily file to choose.
+
+==== yesterday, today and tomorrow
+
+Get the corresponding daily note assosiated with the day. If passed a `label` that label will be prepended to the filename with an `_` character.
+
+[,bash]
+----
+shv today school # It will edit the file school_2023-01-01.$SHV_EXT
+----
+
 == Customization
 
 NOTE: The values of the variables below are the defaults.
 
-WARNING: All the regex used here needs to be POSIX compatible.
+CAUTION: All the regex used here needs to be POSIX compatible.
 
 [,bash]
 ----
