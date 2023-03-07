@@ -73,9 +73,12 @@ _get_date() {
 
 # Returns the path to note of specified day
 # $1: date
+# $2: label
 _get_diary_note() {
     date=$(_get_date "$1")
-    printf "%s/%s.%s" "$SHV_DIARY_PATH" "$date" "$SHV_EXT"
+    [ -z "$2" ] \
+        && printf "%s/%s.%s" "$SHV_DIARY_PATH" "$date" "$SHV_EXT" \
+        || printf "%s/%s_%s.%s" "$SHV_DIARY_PATH" "$2" "$date" "$SHV_EXT"
 }
 
 # Handler to select a markdown tag
@@ -131,13 +134,13 @@ main() {
             note=$(select_date)
             ;;
         today | t)
-            note="$(_get_diary_note 'today')"
+            note="$(_get_diary_note 'today' "$2")"
             ;;
         tomorrow | tom | tm)
-            note="$(_get_diary_note 'tomorrow')"
+            note="$(_get_diary_note 'tomorrow' "$2")"
             ;;
         yesterday | ye | y)
-            note="$(_get_diary_note 'yesterday')"
+            note="$(_get_diary_note 'yesterday' "$2")"
             ;;
         "")
             note=$(select_note "")
