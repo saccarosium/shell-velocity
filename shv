@@ -2,7 +2,7 @@
 
 set -e
 
-: "${EDITOR:=nano}"
+: "${EDITOR:=vi}"
 : "${SHV_EDITOR:=$EDITOR}"
 : "${SHV_PICKER:="fzf --ansi --print-query --bind=alt-enter:print-query"}"
 : "${SHV_PATH:=$HOME/Documents/notes}"
