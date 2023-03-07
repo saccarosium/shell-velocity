@@ -1,6 +1,6 @@
 # :rocket: Shell Velocity
 
-A portable notational velocity for your shell written in `bash`.
+A portable notational velocity for your shell written in POSIX shell.
 
 https://user-images.githubusercontent.com/96259932/223130698-f870c17c-f307-40c0-b48f-050173bf3d18.mp4
 
@@ -9,13 +9,14 @@ https://user-images.githubusercontent.com/96259932/223130698-f870c17c-f307-40c0-
 * Removes cognitive load by combining the note creation and note searching
 * Customizable (use your preffered fuzzy finder or file picker; see [tested pickers](https://github.com/saccarosium/shell-velocity/wiki/Tested-Pickers))
 * Uses wather editor you want (even [Visual Studio Code](https://github.com/saccarosium/shell-velocity/wiki/Visual-Studio-Code)!)
-* Portable (runs everywhere bash run, even on the preinstalled one on OSX)
-* Minimal (only requires bash and a picker of your choice)
+* Portable (runs on every POSIX compatible OS, see [tested OSes](https://github.com/saccarosium/shell-velocity/wiki/Tested-OSes))
+* Minimal (only a POSIX shell and the picker of your choice)
+* Unintrusive (use your preferred markup language, markdown is the default)
 
 ## Dependencies
 
-* `bash 3.2+`
-* UNIX commands
+* POSIX compliant shell
+* POSIX utils
 * [`fzf`](https://github.com/junegunn/fzf) or your favorite picker (e.g. fzy, rofi, dmenu, etc)
 
 ## Installation

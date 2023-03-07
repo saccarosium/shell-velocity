@@ -1,8 +1,6 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
 set -e
-shopt -s extglob
-shopt -s globstar
 
 : "${EDITOR:=nano}"
 : "${SHV_EDITOR:=$EDITOR}"
@@ -23,9 +21,9 @@ actions:
   select <default>
   tags
   diary
-    yesterday
-    today
-    tomorrow
+  yesterday
+  today
+  tomorrow
 EOF
 }
 
@@ -34,7 +32,6 @@ echoerr() { echo "$@" 1>&2; }
 
 # Format string in a more usefull state
 _format() {
-    local str
     # Remove all leading white-space.
     # '${1%%[![:space:]]*}': Strip everything but leading white-space.
     # '${1#${XXX}}': Remove the white-space from the start of the string.
@@ -46,7 +43,7 @@ _format() {
     # Removes EOL characters
     str="${str%%\n}"
     # Substitute spaces with dashes
-    str="${str//\ /-}"
+    str=$(echo "$str" | tr ' ' '-')
 
     printf "%s" "$str"
 }
@@ -65,7 +62,7 @@ _get_files() {
 _get_tags() {
     # Does a recursive
     tags=$(_get_files "$SHV_PATH" | xargs -I {} grep -o -E "$SHV_TAG_EXPR" {} | sort -u)
-    [[ -n $tags ]] && printf "%s\n" "$tags"
+    [ -n "$tags" ] && printf "%s\n" "$tags"
 }
 
 # Returns the date of selected day by standard of date command
@@ -83,7 +80,6 @@ _get_diary_note() {
 
 # Handler to select a markdown tag
 select_tag() {
-    local sel
     sel=$(_get_tags | $SHV_PICKER)
     sel=$(_format "$sel")
     printf "%s" "$sel"
@@ -91,11 +87,10 @@ select_tag() {
 
 # Select/create a date file
 select_date() {
-    local sel
     sel=$(_get_files "$SHV_DIARY_PATH" | $SHV_PICKER | tail -1)
-    [[ -z $sel ]] && exit 0
+    [ -z "$sel" ] && exit 0
     file=$(_format "$sel")
-    ! [[ -f $file ]] && file="$SHV_DIARY_PATH/$file.$SHV_EXT"
+    ! [ -f "$file" ] && file="$SHV_DIARY_PATH/$file.$SHV_EXT"
 
     printf "%s" "$sel"
 }
@@ -103,14 +98,14 @@ select_date() {
 # Handler to search/create note
 # $1: Additional query to filter note search
 select_note() {
-    if [[ -z $1 ]]; then
+    if [ -z "$1" ]; then
         sel=$(_get_files "$SHV_PATH" | xargs -I {} grep -H "" {} | $SHV_PICKER | tail -1)
     else
         sel=$(_get_files "$SHV_PATH" | xargs -I {} grep -l -H "$1" {} | $SHV_PICKER | tail -1)
     fi
-    [[ -z $sel ]] && exit 0
+    [ -z "$sel" ] && exit 0
     file=$(_format "$sel" | cut -d':' -f1)
-    ! [[ -f $file ]] && file="$SHV_PATH/$file.$SHV_EXT"
+    ! [ -f "$file" ] && file="$SHV_PATH/$file.$SHV_EXT"
     printf "%s\n" "$file"
 }
 
@@ -118,7 +113,7 @@ select_note() {
 # $1: Path to file to edit
 # $2: Tag to insert ot the bottom of the file
 edit_note() {
-    [[ -n $2 ]] && ! [[ -f $1 ]] \
+    [ -n "$2" ] && ! [ -f "$1" ] \
         && printf "\n\n%s" "$2" >>"$1"
     $SHV_EDITOR "$1"
 }
@@ -129,7 +124,7 @@ main() {
     case "$1" in
         tags)
             query=$(select_tag)
-            [[ -z $query ]] && exit 0
+            [ -z "$query" ] && exit 0
             note=$(select_note "$query")
             ;;
         diary)
@@ -151,15 +146,15 @@ main() {
             help
             ;;
         *)
-            echo "sh: $1 unrecognized option"
+            echoerr "sh: $1 unrecognized option"
             help
             ;;
     esac
 
-    [[ $SHV_AUTO_CD == true ]] \
+    [ "$SHV_AUTO_CD" = true ] \
         && cd "$SHV_PATH"
 
-    [[ -z $note ]] && exit 0
+    [ -z "$note" ] && exit 0
     edit_note "$note" "$query"
 }
 
