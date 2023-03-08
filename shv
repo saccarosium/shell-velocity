@@ -76,7 +76,7 @@ _get_date() {
 # $2: label
 _get_diary_note() {
     date=$(_get_date "$1")
-    [ -z "$2" ] \
+    [ -z "$2" ] || [ "$2" != "print" ] \
         && printf "%s/%s.%s" "$SHV_DIARY_PATH" "$date" "$SHV_EXT" \
         || printf "%s/%s_%s.%s" "$SHV_DIARY_PATH" "$2" "$date" "$SHV_EXT"
 }
@@ -101,11 +101,9 @@ select_date() {
 # Handler to search/create note
 # $1: Additional query to filter note search
 select_note() {
-    if [ -z "$1" ]; then
-        sel=$(_get_files "$SHV_PATH" | xargs -I {} grep -H "" {} | $SHV_PICKER | tail -1)
-    else
-        sel=$(_get_files "$SHV_PATH" | xargs -I {} grep -l -H "$1" {} | $SHV_PICKER | tail -1)
-    fi
+    [ -z "$1" ] \
+        && sel=$(_get_files "$SHV_PATH" | xargs -I {} grep -H "" {} | $SHV_PICKER | tail -1) \
+        || sel=$(_get_files "$SHV_PATH" | xargs -I {} grep -l -H "$1" {} | $SHV_PICKER | tail -1)
     [ -z "$sel" ] && exit 0
     file=$(_format "$sel" | cut -d':' -f1)
     ! [ -f "$file" ] && file="$SHV_PATH/$file.$SHV_EXT"
@@ -149,7 +147,7 @@ main() {
             help
             ;;
         *)
-            echoerr "sh: $1 unrecognized option"
+            echoerr "$0: \"$1\" unrecognized option"
             help
             ;;
     esac

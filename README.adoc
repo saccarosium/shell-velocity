@@ -7,9 +7,9 @@ video::https://user-images.githubusercontent.com/96259932/223130698-f870c17c-f30
 == Feauteres
 
 * Removes cognitive load by combining the note creation and note searching
-* Customizable (use your preffered fuzzy finder or file picker; see https://github.com/saccarosium/shell-velocity/wiki/Tested-Pickers[tested pickers])
-* Uses wather editor you want (even https://github.com/saccarosium/shell-velocity/wiki/Visual-Studio-Code[Visual Studio Code])
-* Portable (runs on every POSIX compatible OS, see https://github.com/saccarosium/shell-velocity/wiki/Tested-OSes[tested OSes])
+* Customizable (use your preffered fuzzy finder or file picker; see link:docs/tested-pickers.adoc[tested pickers])
+* Uses wather editor you want (even link:docs/visual-studio-code.adoc[Visual Studio Code])
+* Portable (runs on every POSIX compatible OS, see link:docs/tested-oses.adoc[Tested OSes])
 * Minimal (only a POSIX shell and the picker of your choice)
 * Unintrusive (use markdown by default, but works also with your preferred markup languages such as: https://orgmode.org/[org], https://github.com/nvim-neorg/neorg[neorg], rest, https://asciidoc.org/[adoc], etc)
 

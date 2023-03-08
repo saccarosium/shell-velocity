@@ -1,0 +1,13 @@
+= Using shv in Visual Studio Code
+
+== Demo
+
+video::https://user-images.githubusercontent.com/96259932/223199867-d84299ad-91c7-4cd9-aa47-d34cfb994d78.mp4[options=autoplay]
+
+== Steps
+
+. Set your `SHV_EDITOR` to `code -g`.
+. Set `SHV_AUTO_CD` to `false`
+. Use the built in terminal and launch shv.
+. Select a note.
+. Edit in VScode

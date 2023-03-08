@@ -1,0 +1,29 @@
+= Tested Pickers
+
+== Fzy
+
+[,bash]
+----
+export SHV_PICKER="fzy"
+----
+
+== Peco
+
+[,bash]
+----
+export SHV_PICKER="peco --print-query"
+----
+
+== Dmenu
+
+[,bash]
+----
+export SHV_PICKER="dmenu -l 20"
+----
+
+== Rofi
+
+[,bash]
+----
+export SHV_PICKER="rofi -dmenu"
+----
