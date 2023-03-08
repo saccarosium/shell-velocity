@@ -75,6 +75,9 @@ CAUTION: All the regex used here needs to be POSIX compatible.
 
 [,bash]
 ----
+# The editor used to edit your notes.
+export SHV_EDITOR=$EDITOR
+
 # If you want that your editor pwd is in the SHV_PATH
 export SHV_AUTO_CD=true
 
@@ -96,5 +99,5 @@ export SHV_DATE_FMT="%Y-%m-%d"
 export SHV_EXT="md"
 
 # Picker used to select notes
-export SHV_PICKER="fzf --ansi --print-query --bind=ctrl-g:print-query"
+export SHV_PICKER="fzf --ansi --print-query --bind=alt-enter:print-query"
 ----
