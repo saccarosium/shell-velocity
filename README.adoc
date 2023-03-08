@@ -4,14 +4,14 @@ A portable notational velocity for your shell written in POSIX shell.
 
 video::https://user-images.githubusercontent.com/96259932/223130698-f870c17c-f307-40c0-b48f-050173bf3d18.mp4[options=autoplay]
 
-== Feauteres
+== Features
 
 * Removes cognitive load by combining the note creation and note searching
-* Customizable (use your preffered fuzzy finder or file picker; see link:docs/tested-pickers.adoc[tested pickers])
-* Uses wather editor you want (even link:docs/visual-studio-code.adoc[Visual Studio Code])
+* Customizable (use your preferred fuzzy finder or file picker; see link:docs/tested-pickers.adoc[tested pickers])
+* Uses whatever editor you want (even link:docs/visual-studio-code.adoc[Visual Studio Code])
 * Portable (runs on every POSIX compatible OS, see link:docs/tested-oses.adoc[Tested OSes])
 * Minimal (only a POSIX shell and the picker of your choice)
-* Unintrusive (use markdown by default, but works also with your preferred markup languages such as: https://orgmode.org/[org], https://github.com/nvim-neorg/neorg[neorg], rest, https://asciidoc.org/[adoc], etc)
+* Nonintrusive (use markdown by default, but works also with your preferred markup languages such as: https://orgmode.org/[org], https://github.com/nvim-neorg/neorg[neorg], rest, https://asciidoc.org/[adoc], etc)
 
 == Dependencies
 
@@ -48,7 +48,7 @@ shv [yesterday | ye | y] <label> # edit yesterday diary note
 
 ==== no subcommand
 
-Grepes all the files with your selected extention in your `$SHV_PATH`. If no match is found, or you use the keybinding to create a note, a new note will be created.
+`grep` all the files with your selected extension in your `$SHV_PATH`. If no match is found, or you use the keybinding to create a note, a new note will be created.
 
 ==== tags
 
@@ -60,7 +60,7 @@ Searches in your `$SHV_DIARY_PATH` for notes, and uses your picker to select wha
 
 ==== yesterday, today and tomorrow
 
-Get the corresponding daily note assosiated with the day. If passed a `label` that label will be prepended to the filename with an `_` character.
+Get the corresponding daily note associated with the day. If passed a `label` that label will be prepended to the filename with an `_` character.
 
 [,bash]
 ----
@@ -95,7 +95,7 @@ export SHV_TAG_EXPR="#[a-z0-9_]+"
 # For see how to modify this value check 'man date'
 export SHV_DATE_FMT="%Y-%m-%d"
 
-# Exention used for the notes
+# Extension used for the notes
 export SHV_EXT="md"
 
 # Picker used to select notes
