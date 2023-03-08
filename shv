@@ -8,6 +8,7 @@ set -e
 : "${SHV_PATH:=$HOME/Documents/notes}"
 : "${SHV_DIARY_PATH:=$SHV_PATH/diary}"
 : "${SHV_EXT:=md}"
+: "${SHV_MORE_EXTS:=adoc txt org taskpaper}"
 : "${SHV_TAG_EXPR:=#[a-z0-9_]+}"
 : "${SHV_DATE_FMT:=%Y-%m-%d}"
 : "${SHV_AUTO_CD:=true}"
@@ -51,11 +52,16 @@ _format() {
 # List files in dir
 
 _get_files() {
+    files=""
+    for file in $SHV_EXT $SHV_MORE_EXTS; do
+        files="${files:+${files} -o} -iname *.${file}"
+    done
+
     find "$1" \
-        -type f \
-        -name "*.$SHV_EXT" \
-        -not -path "./.obsidian/*" \
-        -not -path "./.git/*"
+         -type f \
+         '(' $files ')' \
+         -not -path "./.obsidian/*" \
+         -not -path "./.git/*"
 }
 
 # List markdown tags in SHV_PATH
