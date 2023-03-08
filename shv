@@ -76,7 +76,7 @@ _get_date() {
 # $2: label
 _get_diary_note() {
     date=$(_get_date "$1")
-    [ -z "$2" ] || [ "$2" != "print" ] \
+    [ -z "$2" ] \
         && printf "%s/%s.%s" "$SHV_DIARY_PATH" "$date" "$SHV_EXT" \
         || printf "%s/%s_%s.%s" "$SHV_DIARY_PATH" "$2" "$date" "$SHV_EXT"
 }
