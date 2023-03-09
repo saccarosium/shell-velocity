@@ -95,8 +95,9 @@ export SHV_TAG_EXPR="#[a-z0-9_]+"
 # For see how to modify this value check 'man date'
 export SHV_DATE_FMT="%Y-%m-%d"
 
-# Extension used for the notes
-export SHV_EXT="md"
+# Extensions to search. Space separated list.
+# NOTE: the first of the list will be used as your primary extention when creating a file.
+export SHV_EXTS="md adoc txt org"
 
 # Picker used to select notes
 export SHV_PICKER="fzf --ansi --print-query --bind=alt-enter:print-query"
