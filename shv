@@ -7,8 +7,8 @@ set -e
 : "${SHV_PICKER:="fzf --ansi --print-query --bind=alt-enter:print-query"}"
 : "${SHV_PATH:=$HOME/Documents/notes}"
 : "${SHV_DIARY_PATH:=$SHV_PATH/diary}"
-: "${SHV_EXT:=md}"
-: "${SHV_MORE_EXTS:=adoc txt org taskpaper}"
+: "${SHV_EXTS:=md txt org}"
+: "${SHV_EXT:=$(echo "$SHV_EXTS" | cut -d' ' -f1)}"
 : "${SHV_TAG_EXPR:=#[a-z0-9_]+}"
 : "${SHV_DATE_FMT:=%Y-%m-%d}"
 : "${SHV_AUTO_CD:=true}"
@@ -52,14 +52,14 @@ _format() {
 # List files in dir
 
 _get_files() {
-    files=""
-    for file in $SHV_EXT $SHV_MORE_EXTS; do
-        files="${files:+${files} -o} -iname *.${file}"
+    query=""
+    for ext in $SHV_EXTS; do
+        query="${query:+${query} -o} -iname *.${ext}"
     done
 
     find "$1" \
          -type f \
-         '(' $files ')' \
+         '(' $query ')' \
          -not -path "./.obsidian/*" \
          -not -path "./.git/*"
 }
