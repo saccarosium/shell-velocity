@@ -67,15 +67,21 @@ _get_tags() {
 
 # Returns the date of selected day by standard of date command
 # $1: date
-_get_date() {
-    printf "%s" "$(date --date="$1" +"$SHV_DATE_FMT")"
+_get_future_date() {
+    printf "%s" "$(date -v"$1"d +"$SHV_DATE_FMT")"
+}
+
+_get_past_date() {
+    printf "%s" "$(date -v"$1"d +"$SHV_DATE_FMT")"
 }
 
 # Returns the path to note of specified day
-# $1: date
+# $1: offset number
 # $2: label
 _get_diary_note() {
-    date=$(_get_date "$1")
+    [ "$1" -ge 0 ] \
+        && date=$(_get_future_date "$1") \
+        || date=$(_get_past_date "$1")
     [ -z "$2" ] \
         && printf "%s/%s.%s" "$SHV_DIARY_PATH" "$date" "$SHV_EXT" \
         || printf "%s/%s_%s.%s" "$SHV_DIARY_PATH" "$2" "$date" "$SHV_EXT"
@@ -132,13 +138,13 @@ main() {
             note=$(select_date)
             ;;
         today | t)
-            note="$(_get_diary_note 'today' "$2")"
+            note="$(_get_diary_note +0 "$2")"
             ;;
         tomorrow | tom | tm)
-            note="$(_get_diary_note 'tomorrow' "$2")"
+            note="$(_get_diary_note +1 "$2")"
             ;;
         yesterday | ye | y)
-            note="$(_get_diary_note 'yesterday' "$2")"
+            note="$(_get_diary_note -1 "$2")"
             ;;
         "")
             note=$(select_note "")
