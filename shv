@@ -12,6 +12,8 @@ set -e
 : "${SHV_DATE_FMT:=%Y-%m-%d}"
 : "${SHV_AUTO_CD:=true}"
 
+OS=$(uname)
+
 help() {
     cat <<EOF
 shell velocity an efficient note taking utility
@@ -66,13 +68,19 @@ _get_tags() {
 }
 
 # Returns the date of selected day by standard of date command
-# $1: date
+# $1: offset
 _get_future_date() {
-    printf "%s" "$(date -v"$1"d +"$SHV_DATE_FMT")"
+    [ "$OS" = "Linux" ] \
+        && printf "%s" "$(date -d "$1 days" +"$SHV_DATE_FMT")" \
+        || printf "%s" "$(date -v"$1"d +"$SHV_DATE_FMT")"
 }
 
+# Returns the date of selected day by standard of date command
+# $1: offset
 _get_past_date() {
-    printf "%s" "$(date -v"$1"d +"$SHV_DATE_FMT")"
+    [ "$OS" = "Linux" ] \
+        && printf "%s" "$(date -d "$1 days" +"$SHV_DATE_FMT")" \
+        || printf "%s" "$(date -v"$1"d +"$SHV_DATE_FMT")"
 }
 
 # Returns the path to note of specified day
