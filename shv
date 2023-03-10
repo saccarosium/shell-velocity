@@ -160,6 +160,9 @@ main() {
         yesterday | ye | y)
             note="$(_get_diary_note -1 "$2")"
             ;;
+        scratch)
+            note="$SHV_PATH/scratchpad.md"
+            ;;
         "")
             note=$(select_note "")
             ;;

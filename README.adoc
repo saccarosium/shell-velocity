@@ -40,6 +40,7 @@ NOTE: Every subcommand that uses your `$SHV_PICKER` is capable of creating a new
 ----
 shv # select a note
 shv tags # list all notes with specific tag
+shv scratch # open scratchpad file
 shv diary # select a note from diary folder
 shv [today | t] <label> # edit todays diary note
 shv [tomorrow | tom | tm] <label> # edit tomorrow diary note
@@ -53,6 +54,10 @@ shv [yesterday | ye | y] <label> # edit yesterday diary note
 ==== tags
 
 Searches with the regular expression defined in `$SHV_TAG_EXPR` in your `$SHV_PATH` and then make your select a list of file that contains that tag. If no match is found, or you use the keybinding to create a note, a new note will be created with the selected tags at the bottom.
+
+==== scratch
+
+Opens a scratchpad file in your notes directory.
 
 ==== diary
 
