@@ -4,12 +4,13 @@ set -e
 
 : "${EDITOR:=vi}"
 : "${SHV_EDITOR:=$EDITOR}"
-: "${SHV_PICKER:="fzf --ansi --print-query --bind=alt-enter:print-query"}"
+: "${SHV_PICKER:="fzf -m --ansi --print-query --bind=alt-enter:print-query"}"
 : "${SHV_PATH:=$HOME/Documents/notes}"
 : "${SHV_DIARY_PATH:=$SHV_PATH/diary}"
 : "${SHV_EXTS:=md adoc txt org}"
 : "${SHV_TAG_EXPR:=#[a-z0-9_]+}"
 : "${SHV_DATE_FMT:=%Y-%m-%d}"
+: "${SHV_BMS:=scratchpad TODO}"
 : "${SHV_AUTO_CD:=true}"
 
 OS=$(uname)
@@ -23,10 +24,11 @@ shv [-h|--help] <action>
 actions:
   select <default>
   tags
+  bookmarks | bms | b
   diary
-  yesterday
-  today
-  tomorrow
+  yesterday | ye | y
+  today | t
+  tomorrow | tom | tm
 EOF
 }
 
@@ -52,7 +54,6 @@ _format() {
 }
 
 # List files in dir
-
 _get_files() {
     query=""
     for ext in $SHV_EXTS; do
@@ -108,6 +109,12 @@ select_tag() {
     printf "%s" "$sel"
 }
 
+# Returns path to bookmarked file
+# $1: index of file in "array" (starts at 1)
+select_bookmark() {
+    printf "%s/%s" "$SHV_PATH" "$(echo "$SHV_BMS" | cut -d' ' -f"$1")"
+}
+
 # Select/create a date file
 select_date() {
     sel=$(_get_files "$SHV_DIARY_PATH" | $SHV_PICKER | tail -1)
@@ -152,16 +159,16 @@ main() {
             note=$(select_date)
             ;;
         today | t)
-            note="$(_get_diary_note +0 "$2")"
+            note=$(_get_diary_note +0 "$2")
             ;;
         tomorrow | tom | tm)
-            note="$(_get_diary_note +1 "$2")"
+            note=$(_get_diary_note +1 "$2")
             ;;
         yesterday | ye | y)
-            note="$(_get_diary_note -1 "$2")"
+            note=$(_get_diary_note -1 "$2")
             ;;
-        scratch)
-            note="$SHV_PATH/scratchpad.md"
+        bookmarks | bms | b)
+            note=$(select_bookmark "$2")
             ;;
         "")
             note=$(select_note "")
