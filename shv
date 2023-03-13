@@ -9,6 +9,7 @@ set -e
 : "${SHV_DIARY_PATH:=$SHV_PATH/diary}"
 : "${SHV_EXTS:=md adoc txt org}"
 : "${SHV_DATE_FMT:=%Y-%m-%d}"
+: "${SHV_IGNORE:=./.obsidian/* ./.git/*}"
 : "${SHV_BMS:=scratchpad.md}"
 : "${SHV_AUTO_CD:=true}"
 
@@ -69,13 +70,11 @@ get_files() {
     for ext in $SHV_EXTS; do
         query="${query:+${query} -o} -iname *.${ext}"
     done
-
-    find "$1" \
-        -type f \
-        '(' $query ')' \
-        -not -path "./.obsidian/*" \
-        -not -path "./.git/*"
-}
+    ignore=""
+    for ign in $SHV_IGNORE; do
+        ignore="${ignore:+${ignore}} -not -path ${ign}"
+    done
+    find "$1" -type f '(' $query ')' '(' $ignore ')'
 }
 
 # Returns the date of selected day by standard of date command
