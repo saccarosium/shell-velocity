@@ -10,7 +10,7 @@ set -e
 : "${SHV_EXTS:=md adoc txt org}"
 : "${SHV_TAG_EXPR:=#[a-z0-9_]+}"
 : "${SHV_DATE_FMT:=%Y-%m-%d}"
-: "${SHV_BMS:=scratchpad TODO}"
+: "${SHV_BMS:=scratchpad.md TODO.txt}"
 : "${SHV_AUTO_CD:=true}"
 
 OS=$(uname)
@@ -35,8 +35,7 @@ EOF
 # Echo to stderr
 echoerr() { echo "$@" 1>&2; }
 
-# Format string in a more usefull state
-_format() {
+strip() {
     # Remove all leading white-space.
     # '${1%%[![:space:]]*}': Strip everything but leading white-space.
     # '${1#${XXX}}': Remove the white-space from the start of the string.
@@ -45,38 +44,51 @@ _format() {
     # '${trim##*[![:space:]]}': Strip everything but trailing white-space.
     # '${trim%${XXX}}': Remove the white-space from the end of the string.
     str="${str%${str##*[![:space:]]}}"
-    # Removes EOL characters
-    str="${str%%\n}"
+
+    printf "%s" "$str"
+}
+
+# Format string in a more usefull state
+format() {
+    str=$(strip "$1")
+    printf "%s" "$str"
+}
+
+normalize() {
+    str=$(strip "$1")
     # Substitute spaces with dashes
+    str=$(echo "$str" | tr '\n' '#')
     str=$(echo "$str" | tr ' ' '-')
+    str=$(echo "$str" | tr '\n' ' ')
+    str=$(echo "$str" | tr '#' ' ')
 
     printf "%s" "$str"
 }
 
 # List files in dir
-_get_files() {
+get_files() {
     query=""
     for ext in $SHV_EXTS; do
         query="${query:+${query} -o} -iname *.${ext}"
     done
 
     find "$1" \
-         -type f \
-         '(' $query ')' \
-         -not -path "./.obsidian/*" \
-         -not -path "./.git/*"
+        -type f \
+        '(' $query ')' \
+        -not -path "./.obsidian/*" \
+        -not -path "./.git/*"
 }
 
 # List markdown tags in SHV_PATH
-_get_tags() {
+get_tags() {
     # Does a recursive
-    tags=$(_get_files "$SHV_PATH" | xargs -I {} grep -o -E "$SHV_TAG_EXPR" {} | sort -u)
+    tags=$(get_files "$SHV_PATH" | xargs -I {} grep -o -E "$SHV_TAG_EXPR" {} | sort -u)
     [ -n "$tags" ] && printf "%s\n" "$tags"
 }
 
 # Returns the date of selected day by standard of date command
 # $1: offset
-_get_future_date() {
+get_future_date() {
     [ "$OS" = "Linux" ] \
         && printf "%s" "$(date -d "$1 days" +"$SHV_DATE_FMT")" \
         || printf "%s" "$(date -v"$1"d +"$SHV_DATE_FMT")"
@@ -84,7 +96,7 @@ _get_future_date() {
 
 # Returns the date of selected day by standard of date command
 # $1: offset
-_get_past_date() {
+get_past_date() {
     [ "$OS" = "Linux" ] \
         && printf "%s" "$(date -d "$1 days" +"$SHV_DATE_FMT")" \
         || printf "%s" "$(date -v"$1"d +"$SHV_DATE_FMT")"
@@ -93,10 +105,10 @@ _get_past_date() {
 # Returns the path to note of specified day
 # $1: offset number
 # $2: label
-_get_diary_note() {
+get_diary_note() {
     [ "$1" -ge 0 ] \
-        && date=$(_get_future_date "$1") \
-        || date=$(_get_past_date "$1")
+        && date=$(get_future_date "$1") \
+        || date=$(get_past_date "$1")
     [ -z "$2" ] \
         && printf "%s/%s.%s" "$SHV_DIARY_PATH" "$date" "$EXT" \
         || printf "%s/%s_%s.%s" "$SHV_DIARY_PATH" "$2" "$date" "$EXT"
@@ -104,8 +116,8 @@ _get_diary_note() {
 
 # Handler to select a markdown tag
 select_tag() {
-    sel=$(_get_tags | $SHV_PICKER)
-    sel=$(_format "$sel")
+    sel=$(get_tags | $SHV_PICKER)
+    sel=$(format "$sel")
     printf "%s" "$sel"
 }
 
@@ -117,9 +129,9 @@ select_bookmark() {
 
 # Select/create a date file
 select_date() {
-    sel=$(_get_files "$SHV_DIARY_PATH" | $SHV_PICKER | tail -1)
+    sel=$(get_files "$SHV_DIARY_PATH" | $SHV_PICKER | tail -1)
     [ -z "$sel" ] && exit 0
-    file=$(_format "$sel")
+    file=$(format "$sel")
     ! [ -f "$file" ] && file="$SHV_DIARY_PATH/$file.$EXT"
 
     printf "%s" "$sel"
@@ -128,22 +140,27 @@ select_date() {
 # Handler to search/create note
 # $1: Additional query to filter note search
 select_note() {
-    [ -z "$1" ] \
-        && sel=$(_get_files "$SHV_PATH" | xargs -I {} grep -H "" {} | $SHV_PICKER | tail -1) \
-        || sel=$(_get_files "$SHV_PATH" | xargs -I {} grep -l -H "$1" {} | $SHV_PICKER | tail -1)
+    if [ -z "$1" ]; then
+        sel=$(get_files "$SHV_PATH" | xargs -I {} grep -H "" {} | $SHV_PICKER | sed "s/:.*//g; s/\n/\#/g")
+    else
+        sel=$(get_files "$SHV_PATH" | xargs -I {} grep -l -H "$1" {} | $SHV_PICKER | sed "s/:.*//g; s/\n/\#/g")
+    fi
     [ -z "$sel" ] && exit 0
-    file=$(_format "$sel" | cut -d':' -f1)
-    ! [ -f "$file" ] && file="$SHV_PATH/$file.$EXT"
-    printf "%s\n" "$file"
+    args=$(normalize "$sel")
+    for i in $args; do
+        [ -f "$i" ] \
+            && file=${file:+"$file "}$i \
+            || tmp="$SHV_PATH/$i.$EXT"
+    done
+    [ -z "$file" ] && file=$tmp
+
+    printf "%s" "$file"
 }
 
 # Edit note with EDITOR
 # $1: Path to file to edit
-# $2: Tag to insert ot the bottom of the file
 edit_note() {
-    [ -n "$2" ] && ! [ -f "$1" ] \
-        && printf "\n\n%s" "$2" >>"$1"
-    $SHV_EDITOR "$1"
+    $SHV_EDITOR $*
 }
 
 # Main function
@@ -159,13 +176,13 @@ main() {
             note=$(select_date)
             ;;
         today | t)
-            note=$(_get_diary_note +0 "$2")
+            note=$(get_diary_note +0 "$2")
             ;;
         tomorrow | tom | tm)
-            note=$(_get_diary_note +1 "$2")
+            note=$(get_diary_note +1 "$2")
             ;;
         yesterday | ye | y)
-            note=$(_get_diary_note -1 "$2")
+            note=$(get_diary_note -1 "$2")
             ;;
         bookmarks | bms | b)
             note=$(select_bookmark "$2")
@@ -186,7 +203,7 @@ main() {
         && cd "$SHV_PATH"
 
     [ -z "$note" ] && exit 0
-    edit_note "$note" "$query"
+    edit_note "$note"
 }
 
 main "$@"
