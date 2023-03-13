@@ -132,6 +132,8 @@ edit_notes() {
 # Main function
 # $1: subcommands
 main() {
+    pwd="$PWD"
+    cd "$HOME"
     case "$1" in
         diary)
             note=$(select_date)
@@ -161,7 +163,8 @@ main() {
     esac
 
     [ "$SHV_AUTO_CD" = true ] \
-        && cd "$SHV_PATH"
+        && cd "$SHV_PATH" \
+        || cd "$pwd"
 
     [ -z "$note" ] && exit 0
     edit_notes "$note"
