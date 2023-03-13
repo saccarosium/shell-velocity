@@ -50,11 +50,14 @@ shv [yesterday | ye | y] <label> # edit yesterday diary note
 
 `grep` all the files with your selected extension in your `$SHV_PATH`. If no match is found, or you use the keybinding to create a note, a new note will be created.
 
+==== bookmarks
 
+Edit a file you edit often by simply using the number is located in `$SHV_BMS`
 
-==== scratch
-
-Opens a scratchpad file in your notes directory.
+[,bash]
+----
+shv bookmarks 1 # By default will edit "stratchpad.md"
+----
 
 ==== diary
 
@@ -90,7 +93,7 @@ export SHV_PATH="$HOME/Documents/notes"
 export SHV_DIARY_PATH="$SHV_PATH/diary"
 
 # Bookmarked files. Space separated list.
-export SHV_BMS="scratchpad.md TODO.md"
+export SHV_BMS="scratchpad.md"
 
 # String passed to 'date' command.
 # For see how to modify this value check 'man date'

@@ -83,6 +83,11 @@ get_future_date() {
     [ "$OS" = "Linux" ] \
         && printf "%s" "$(date -d "$1 days" +"$SHV_DATE_FMT")" \
         || printf "%s" "$(date -v"$1"d +"$SHV_DATE_FMT")"
+# Returns path to bookmarked file
+# $1: index of file in "array" (starts at 1)
+get_bookmark() {
+    bmk=$(echo "$SHV_BMS" | cut -d' ' -f"$1")
+    printf "%s/%s" "$SHV_PATH" "$bmk"
 }
 
 # Returns the date of selected day by standard of date command
