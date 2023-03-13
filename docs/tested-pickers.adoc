@@ -14,6 +14,13 @@ export SHV_PICKER="fzy"
 export SHV_PICKER="peco --print-query"
 ----
 
+== Gum
+
+[,bash]
+----
+gum filter --no-strict --no-limit
+----
+
 == Dmenu
 
 [,bash]
