@@ -10,7 +10,7 @@ set -e
 : "${SHV_EXTS:=md adoc txt org}"
 : "${SHV_TAG_EXPR:=#[a-z0-9_]+}"
 : "${SHV_DATE_FMT:=%Y-%m-%d}"
-: "${SHV_BMS:=scratchpad.md TODO.txt}"
+: "${SHV_BMS:=scratchpad.md}"
 : "${SHV_AUTO_CD:=true}"
 
 OS=$(uname)
