@@ -113,11 +113,7 @@ parse() {
 # Handler to search/create note
 # $1: Additional query to filter note search
 select_note() {
-    if [ -z "$1" ]; then
-        sel=$(get_files "$SHV_PATH" | xargs -I {} grep -H "" {} | $SHV_PICKER | sed "s/:.*//g; s/\n/\#/g")
-    else
-        sel=$(get_files "$SHV_PATH" | xargs -I {} grep -l -H "$1" {} | $SHV_PICKER | sed "s/:.*//g; s/\n/\#/g")
-    fi
+    sel=$(get_files "$SHV_PATH" | xargs -I {} grep -H "" {} | $SHV_PICKER | sed "s/:.*//g; s/\n/\#/g")
     [ -z "$sel" ] && exit 1
     file=$(parse "$sel")
     printf "%s" "$file"
@@ -151,7 +147,7 @@ main() {
             note=$(get_bookmark "$2")
             ;;
         "")
-            note=$(select_note "")
+            note=$(select_note)
             ;;
         -h | --help)
             help
