@@ -108,5 +108,5 @@ export SHV_EXTS="md adoc txt org"
 export SHV_IGNORE="./.obsidian/* ./.git/*"
 
 # Picker used to select notes
-export SHV_PICKER="fzf --ansi --print-query --bind=alt-enter:print-query"
+export SHV_PICKER="fzf -m --ansi --print-query --bind=alt-enter:print-query"
 ----

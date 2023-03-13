@@ -43,24 +43,11 @@ strip() {
     # '${trim##*[![:space:]]}': Strip everything but trailing white-space.
     # '${trim%${XXX}}': Remove the white-space from the end of the string.
     str="${str%${str##*[![:space:]]}}"
-
-    printf "%s" "$str"
-}
-
-# Format string in a more usefull state
-format() {
-    str=$(strip "$1")
     printf "%s" "$str"
 }
 
 normalize() {
-    str=$(strip "$1")
-    # Substitute spaces with dashes
-    str=$(echo "$str" | tr '\n' '#')
-    str=$(echo "$str" | tr ' ' '-')
-    str=$(echo "$str" | tr '\n' ' ')
-    str=$(echo "$str" | tr '#' ' ')
-
+    str=$(strip "$1" | sed "s/\n/#/g; s/\ /-/g; s/\n/#/g; s/#/\ /g")
     printf "%s" "$str"
 }
 
@@ -77,12 +64,6 @@ get_files() {
     find "$1" -type f '(' $query ')' '(' $ignore ')'
 }
 
-# Returns the date of selected day by standard of date command
-# $1: offset
-get_future_date() {
-    [ "$OS" = "Linux" ] \
-        && printf "%s" "$(date -d "$1 days" +"$SHV_DATE_FMT")" \
-        || printf "%s" "$(date -v"$1"d +"$SHV_DATE_FMT")"
 # Returns path to bookmarked file
 # $1: index of file in "array" (starts at 1)
 get_bookmark() {
@@ -92,7 +73,7 @@ get_bookmark() {
 
 # Returns the date of selected day by standard of date command
 # $1: offset
-get_past_date() {
+get_date() {
     [ "$OS" = "Linux" ] \
         && printf "%s" "$(date -d "$1 days" +"$SHV_DATE_FMT")" \
         || printf "%s" "$(date -v"$1"d +"$SHV_DATE_FMT")"
@@ -102,28 +83,31 @@ get_past_date() {
 # $1: offset number
 # $2: label
 get_diary_note() {
-    [ "$1" -ge 0 ] \
-        && date=$(get_future_date "$1") \
-        || date=$(get_past_date "$1")
+    date=$(get_date "$1")
     [ -z "$2" ] \
         && printf "%s/%s.%s" "$SHV_DIARY_PATH" "$date" "$EXT" \
         || printf "%s/%s_%s.%s" "$SHV_DIARY_PATH" "$2" "$date" "$EXT"
 }
 
-# Returns path to bookmarked file
-# $1: index of file in "array" (starts at 1)
-select_bookmark() {
-    printf "%s/%s" "$SHV_PATH" "$(echo "$SHV_BMS" | cut -d' ' -f"$1")"
-}
-
 # Select/create a date file
 select_date() {
     sel=$(get_files "$SHV_DIARY_PATH" | $SHV_PICKER | tail -1)
-    [ -z "$sel" ] && exit 0
-    file=$(format "$sel")
+    [ -z "$sel" ] && exit 1
+    file=$(strip "$sel")
     ! [ -f "$file" ] && file="$SHV_DIARY_PATH/$file.$EXT"
 
     printf "%s" "$sel"
+}
+
+parse() {
+    args=$(normalize "$1")
+    for i in $args; do
+        [ -f "$i" ] \
+            && file=${file:+"$file "}$i \
+            || tmp="$SHV_PATH/$i.$EXT"
+    done
+    [ -z "$file" ] && file=$tmp
+    printf "%s" "$file"
 }
 
 # Handler to search/create note
@@ -134,21 +118,14 @@ select_note() {
     else
         sel=$(get_files "$SHV_PATH" | xargs -I {} grep -l -H "$1" {} | $SHV_PICKER | sed "s/:.*//g; s/\n/\#/g")
     fi
-    [ -z "$sel" ] && exit 0
-    args=$(normalize "$sel")
-    for i in $args; do
-        [ -f "$i" ] \
-            && file=${file:+"$file "}$i \
-            || tmp="$SHV_PATH/$i.$EXT"
-    done
-    [ -z "$file" ] && file=$tmp
-
+    [ -z "$sel" ] && exit 1
+    file=$(parse "$sel")
     printf "%s" "$file"
 }
 
 # Edit note with EDITOR
-# $1: Path to file to edit
-edit_note() {
+# $*: Path to file to edit
+edit_notes() {
     $SHV_EDITOR $*
 }
 
@@ -169,7 +146,7 @@ main() {
             note=$(get_diary_note -1 "$2")
             ;;
         bookmarks | bms | b)
-            note=$(select_bookmark "$2")
+            note=$(get_bookmark "$2")
             ;;
         "")
             note=$(select_note "")
@@ -187,7 +164,7 @@ main() {
         && cd "$SHV_PATH"
 
     [ -z "$note" ] && exit 0
-    edit_note "$note"
+    edit_notes "$note"
 }
 
 main "$@"
