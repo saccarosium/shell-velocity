@@ -4,7 +4,7 @@ set -e
 
 : "${EDITOR:=vi}"
 : "${SHV_EDITOR:=$EDITOR}"
-: "${SHV_PICKER:="fzf --ansi --print-query --bind=alt-enter:print-query"}"
+: "${SHV_PICKER:="fzf -m --ansi --print-query --bind=alt-enter:print-query"}"
 : "${SHV_PATH:=$HOME/Documents/notes}"
 : "${SHV_DIARY_PATH:=$SHV_PATH/diary}"
 : "${SHV_EXTS:=md adoc txt org}"
@@ -61,7 +61,6 @@ normalize() {
     str=$(echo "$str" | tr ' ' '-')
     str=$(echo "$str" | tr '\n' ' ')
     str=$(echo "$str" | tr '#' ' ')
-
 
     printf "%s" "$str"
 }

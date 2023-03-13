@@ -96,6 +96,9 @@ export SHV_DIARY_PATH="$SHV_PATH/diary"
 # By default markdown tags '#tag'
 export SHV_TAG_EXPR="#[a-z0-9_]+"
 
+# Bookmarked files. Space separated list.
+export SHV_BMS="scratchpad.md TODO.md"
+
 # String passed to 'date' command.
 # For see how to modify this value check 'man date'
 export SHV_DATE_FMT="%Y-%m-%d"
