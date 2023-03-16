@@ -125,6 +125,12 @@ edit_notes() {
     $SHV_EDITOR $*
 }
 
+# Echo to stderr and quit
+die() {
+    printf '%s: %s.\n' "$0" "$1" >&2
+    exit 1
+}
+
 # Main function
 # $1: subcommands
 main() {
@@ -153,7 +159,7 @@ main() {
             help
             ;;
         *)
-            echoerr "$0: \"$1\" unrecognized option"
+            die "\"$1\" unrecognized option"
             help
             ;;
     esac
