@@ -64,7 +64,7 @@ get_files() {
 # Returns path to bookmarked file
 # $1: index of file in "array" (starts at 1)
 get_bookmark() {
-    bmk=$(echo "$SHV_BMS" | cut -d' ' -f"$1")
+    bmk=$(printf "%s" "$SHV_BMS" | cut -d' ' -f"$1")
     printf "%s/%s" "$SHV_PATH" "$bmk"
 }
 
