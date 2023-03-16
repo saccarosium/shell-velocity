@@ -100,12 +100,20 @@ parse() {
     printf "%s" "$file"
 }
 
+# Select/create a date file
+select_date() {
+    sel=$(get_files "$SHV_DIARY_PATH" | $SHV_PICKER | sed "s/\n/#/g")
+    [ -z "$sel" ] && exit 1
+    file=$(parse "$sel" "$SHV_DIARY_PATH")
+    printf "%s" "$file"
+}
+
 # Handler to search/create note
 # $1: Additional query to filter note search
 select_note() {
-    sel=$(get_files "$SHV_PATH" | xargs -I {} grep -H "" {} | $SHV_PICKER | sed "s/:.*//g; s/\n/\#/g")
+    sel=$(get_files "$SHV_PATH" | xargs -I {} grep -H "" {} | $SHV_PICKER | sed "s/:.*//g")
     [ -z "$sel" ] && exit 1
-    file=$(parse "$sel")
+    file=$(parse "$sel" "$SHV_PATH")
     printf "%s" "$file"
 }
 
