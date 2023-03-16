@@ -31,9 +31,6 @@ EOF
     exit 0
 }
 
-# Echo to stderr
-echoerr() { echo "$@" 1>&2; }
-
 strip() {
     # Remove all leading white-space.
     # '${1%%[![:space:]]*}': Strip everything but leading white-space.
