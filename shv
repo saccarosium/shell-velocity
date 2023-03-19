@@ -11,9 +11,11 @@ set -e
 : "${SHV_IGNORE:=./.obsidian/* ./.git/*}"
 : "${SHV_BMS:=scratchpad.md}"
 : "${SHV_AUTO_CD:=true}"
+: "${SHV_HISTORY:=true}"
 
 os=$(uname)
 ext=$(printf "%s" "$SHV_EXTS" | cut -d' ' -f1)
+histfile="${XDG_DATA_HOME:-$HOME/.local/share}/shv_history"
 
 help() {
     cat <<EOF
@@ -27,6 +29,7 @@ actions:
   yesterday | ye | y
   today | t
   tomorrow | tom | tm
+  history | hist | h
 EOF
     exit 0
 }
@@ -117,9 +120,27 @@ select_note() {
     printf "%s" "$file"
 }
 
+store_hist() {
+    files=$(printf "%s" "$@" | tr ' ' '\n')
+    dirname=$(dirname "$histfile")
+    [ -d "$dirname" ] \
+        && printf "%s\n" "$files" >>"$histfile"
+}
+
+restore_hist() {
+    [ "$SHV_HISTORY" = false ] \
+        && die "history is not enabled"
+    [ -r "$histfile" ] \
+        && file=$(sort -u "$histfile" | sed "/^$/ d" | $SHV_PICKER) \
+        || die "$histfile is not a redable"
+    printf "%s" "$file"
+}
+
 # Edit note with EDITOR
 # $*: Path to file to edit
 edit_notes() {
+    [ "$SHV_HISTORY" = true ] \
+        && store_hist "$@"
     $SHV_EDITOR $*
 }
 
@@ -149,6 +170,9 @@ main() {
             ;;
         bookmarks | bms | b)
             note=$(get_bookmark "$2")
+            ;;
+        history | hist | h)
+            note=$(restore_hist)
             ;;
         "")
             note=$(select_note)

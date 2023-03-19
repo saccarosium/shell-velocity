@@ -44,6 +44,7 @@ shv diary # select a note from diary folder
 shv [today | t] <label> # edit todays diary note
 shv [tomorrow | tom | tm] <label> # edit tomorrow diary note
 shv [yesterday | ye | y] <label> # edit yesterday diary note
+shv [history | hist | h] # select notes from note editing history
 ----
 
 ==== no subcommand
@@ -71,6 +72,10 @@ Get the corresponding daily note associated with the day. If passed a `label` th
 ----
 shv today school # It will edit the file school_2023-01-01.$SHV_EXT
 ----
+
+==== history
+
+Searches through your edit history and uses your picker to select some notes.
 
 == Customization
 
@@ -109,4 +114,7 @@ export SHV_IGNORE="./.obsidian/* ./.git/*"
 
 # Picker used to select notes
 export SHV_PICKER="fzf -m --ansi --print-query --bind=alt-enter:print-query"
+
+# If you want that shv remember's your edited note history
+export SHV_HISTORY=true
 ----
