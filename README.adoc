@@ -39,7 +39,6 @@ NOTE: Every subcommand that uses your `$SHV_PICKER` is capable of creating a new
 [,bash]
 ----
 shv # select a note
-shv scratch # open scratchpad file
 shv diary # select a note from diary folder
 shv [today | t] <label> # edit todays diary note
 shv [tomorrow | tom | tm] <label> # edit tomorrow diary note
