@@ -21,6 +21,15 @@ video::https://user-images.githubusercontent.com/96259932/223130698-f870c17c-f30
 
 == Installation
 
+=== Arch Linux (AUR)
+
+[,bash]
+----
+yay -S shell-velocity-git
+----
+
+=== Manual
+
 IMPORTANT: Make sure that `~/.local/bin` is in your `PATH`.
 
 [,bash]
