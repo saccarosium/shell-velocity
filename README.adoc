@@ -1,6 +1,6 @@
 = 🚀 Shell Velocity
 
-A portable notational velocity for your shell written in POSIX shell.
+A portable https://en.wikipedia.org/wiki/Notational_Velocity[notational velocity] for your shell written in POSIX shell.
 
 video::https://user-images.githubusercontent.com/96259932/223130698-f870c17c-f307-40c0-b48f-050173bf3d18.mp4[options=autoplay]
 
@@ -20,6 +20,15 @@ video::https://user-images.githubusercontent.com/96259932/223130698-f870c17c-f30
 * https://github.com/junegunn/fzf[`fzf`] or your favorite picker (e.g. fzy, rofi, dmenu, etc)
 
 == Installation
+
+=== Arch Linux (AUR)
+
+[,bash]
+----
+yay -S shell-velocity-git
+----
+
+=== Manual
 
 IMPORTANT: Make sure that `~/.local/bin` is in your `PATH`.
 
