@@ -16,9 +16,11 @@ export SHV_PICKER="peco --print-query"
 
 == Gum
 
+WARNING: `--no-strict` flags wasn't fully tested. In some older version of gum may not be there.
+
 [,bash]
 ----
-gum filter --no-strict --no-limit
+export SHV_PICKER="gum filter --no-strict --no-limit"
 ----
 
 == Dmenu
