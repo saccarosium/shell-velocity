@@ -1,4 +1,5 @@
 = 🚀 Shell Velocity
+:toc:
 
 A portable https://en.wikipedia.org/wiki/Notational_Velocity[notational velocity] for your shell written in POSIX shell.
 
@@ -47,7 +48,8 @@ NOTE: Every subcommand that uses your `$SHV_PICKER` is capable of creating a new
 
 [,bash]
 ----
-shv # select a note
+shv search <default> # search through all your notes
+shv select # select a note from your $SHV_PATH
 shv diary # select a note from diary folder
 shv [today | t] <label> # edit todays diary note
 shv [tomorrow | tom | tm] <label> # edit tomorrow diary note
@@ -55,9 +57,23 @@ shv [yesterday | ye | y] <label> # edit yesterday diary note
 shv [history | hist | h] # select notes from note editing history
 ----
 
-==== no subcommand
+==== no args
 
-`grep` all the files with your selected extension in your `$SHV_PATH`. If no match is found, or you use the keybinding to create a note, a new note will be created.
+Launches `$SHV_DEFAULT_CMD` (by default `search`).
+
+.launch shv witout arguments
+[,bash]
+----
+shv
+----
+
+==== search
+
+`grep` all the files with your `$SHV_EXTS` in your `$SHV_PATH`. If no match is found, or you use the keybinding to create a note (if your `$SHV_PICKER` support keybindings), a new note will be created.
+
+==== select
+
+Select one, or more, of your files by filename (a more traditional fuzzy search through files).
 
 ==== bookmarks
 
@@ -107,7 +123,7 @@ export SHV_PICKER="fzf -m --ansi --print-query --bind=alt-enter:print-query"
 export SHV_EXTS="md adoc txt org"
 
 # Default subcommand run if calling shv without arguments (see list of subcommand above for more info).
-NOTE: subcommands that needs input will not work
+# NOTE: subcommands that needs input will not work
 export SHV_DEFAULT_CMD=search
 
 # The editor used to edit your notes.

@@ -1,6 +1,7 @@
 #!/bin/sh
 
 set -e
+# set -x
 
 : "${SHV_EDITOR:=${EDITOR:=vi}}"
 : "${SHV_DEFAULT_CMD:=search}"
@@ -18,13 +19,16 @@ os=$(uname)
 ext=$(printf "%s" "$SHV_EXTS" | cut -d' ' -f1)
 histfile="${XDG_DATA_HOME:-$HOME/.local/share}/shv_history"
 
+###### UTILITY ######
+
 help() {
     cat <<EOF
 shell velocity an efficient note taking utility
 shv [-h|--help] <action>
 
 actions:
-  select <default>
+  search <default>
+  select
   bookmarks | bms | b
   diary
   yesterday | ye | y
@@ -42,6 +46,12 @@ version() {
     exit 0;
 }
 
+# Echo to stderr and quit
+die() {
+    printf '%s: %s.\n' "$0" "$1" >&2
+    exit 1
+}
+
 strip() {
     # Remove all leading white-space.
     # '${1%%[![:space:]]*}': Strip everything but leading white-space.
@@ -54,50 +64,14 @@ strip() {
     printf "%s" "$str"
 }
 
+# Normalize string in an usable state
+# $1: String
 normalize() {
     str=$(strip "$1" | sed "s/\n/#/g; s/\ /-/g; s/\n/#/g; s/#/\ /g")
     printf "%s" "$str"
 }
 
-# List files in dir
-get_files() {
-    query=""
-    for ext in $SHV_EXTS; do
-        query="${query:+${query} -o} -iname *.${ext}"
-    done
-    ignore=""
-    for ign in $SHV_IGNORE; do
-        ignore="${ignore:+${ignore}} -not -path ${ign}"
-    done
-    find "$1" -type f '(' $query ')' '(' $ignore ')'
-}
-
-# Returns path to bookmarked file
-# $1: index of file in "array" (starts at 1)
-get_bookmark() {
-    bmk=$(printf "%s" "$SHV_BMS" | cut -d' ' -f"$1")
-    printf "%s/%s" "$SHV_PATH" "$bmk"
-}
-
-# Returns the date of selected day by standard of date command
-# $1: offset
-get_date() {
-    [ "$os" = "Linux" ] \
-        && printf "%s" "$(date -d "$1 days" +"$SHV_DATE_FMT")" \
-        || printf "%s" "$(date -v"$1"d +"$SHV_DATE_FMT")"
-}
-
-# Returns the path to note of specified day
-# $1: offset number
-# $2: label
-get_diary_note() {
-    date=$(get_date "$1")
-    [ -z "$2" ] \
-        && printf "%s/%s.%s" "$SHV_DIARY_PATH" "$date" "$ext" \
-        || printf "%s/%s_%s.%s" "$SHV_DIARY_PATH" "$2" "$date" "$ext"
-}
-
-# Parse multiple files
+# Parse output of fuctions and return string of files
 # $1: filenames
 # $2: directory
 parse() {
@@ -111,21 +85,27 @@ parse() {
     printf "%s" "$file"
 }
 
-# Select/create a date file
-select_date() {
-    sel=$(get_files "$SHV_DIARY_PATH" | $SHV_PICKER | sed "s/\n/#/g")
-    [ -z "$sel" ] && exit 1
-    file=$(parse "$sel" "$SHV_DIARY_PATH")
-    printf "%s" "$file"
+# List files in dir
+# $1: directory
+get_files() {
+    query=""
+    for ext in $SHV_EXTS; do
+        query="${query:+${query} -o} -iname *.${ext}"
+    done
+    ignore=""
+    for ign in $SHV_IGNORE; do
+        ignore="${ignore:+${ignore}} -not -path ${ign}"
+    done
+    find "$1" -type f '(' $query ')' '(' $ignore ')'
 }
 
-# Handler to search/create note
-# $1: Additional query to filter note search
-select_note() {
-    sel=$(get_files "$SHV_PATH" | xargs -I {} grep -H "" {} | $SHV_PICKER | sed "s/:.*//g")
-    [ -z "$sel" ] && exit 1
-    file=$(parse "$sel" "$SHV_PATH")
-    printf "%s" "$file"
+
+# Returns the date of selected day by standard of date command
+# $1: n of days
+get_date() {
+    [ "$os" = "Linux" ] \
+        && printf "%s" "$(date -d "$1 days" +"$SHV_DATE_FMT")" \
+        || printf "%s" "$(date -v"$1"d +"$SHV_DATE_FMT")"
 }
 
 store_hist() {
@@ -133,6 +113,42 @@ store_hist() {
     dirname=$(dirname "$histfile")
     [ -d "$dirname" ] \
         && printf "%s\n" "$files" >>"$histfile"
+}
+
+###### COMMANDS ######
+
+# Handler to search/create notes
+search_notes() {
+    sel=$(get_files "$SHV_PATH" | xargs -I {} grep -H "" {} | $SHV_PICKER | sed "s/:.*//g")
+    [ -z "$sel" ] && exit 1
+    file=$(parse "$sel" "$SHV_PATH")
+    printf "%s" "$file"
+}
+
+# Handler to select/create notes
+# $1: directory to search
+select_notes() {
+    sel=$(get_files "$1" | $SHV_PICKER | sed "s/\n/#/g")
+    [ -z "$sel" ] && exit 1
+    file=$(parse "$sel" "$1")
+    printf "%s" "$file"
+}
+
+# Returns the path to note of specified day
+# $1: n days
+# $2: label
+diary_note() {
+    date=$(get_date "$1")
+    [ -z "$2" ] \
+        && printf "%s/%s.%s" "$SHV_DIARY_PATH" "$date" "$ext" \
+        || printf "%s/%s_%s.%s" "$SHV_DIARY_PATH" "$2" "$date" "$ext"
+}
+
+# Returns path to bookmarked file
+# $1: index of file in "array" (starts at 1)
+bookmark() {
+    bmk=$(printf "%s" "$SHV_BMS" | cut -d' ' -f"$1")
+    printf "%s/%s" "$SHV_PATH" "$bmk"
 }
 
 restore_hist() {
@@ -152,42 +168,41 @@ edit_notes() {
     $SHV_EDITOR $*
 }
 
-# Echo to stderr and quit
-die() {
-    printf '%s: %s.\n' "$0" "$1" >&2
-    exit 1
-}
+###### MAIN ######
 
 # Main function
 # $1: subcommands
 main() {
-    pwd="$PWD"
-    cd "$HOME"
-    case "$1" in
+    # [ "$PWD" = "$SHV_PATH" ] && cd "$HOME"
     [ -z "$1" ] \
         && sub="$SHV_DEFAULT_CMD" \
         || sub="$1"
+    [ -d "$SHV_PATH" ] \
+        || die "$SHV_PATH doesn't exist"
     case "$sub" in
+        search)
+            note=$(search_notes)
+            ;;
+        select | sel)
+            note=$(select_notes "$SHV_PATH")
+            ;;
         diary)
-            note=$(select_date)
+            note=$(select_notes "$SHV_DIARY_PATH")
             ;;
         today | t)
-            note=$(get_diary_note +0 "$2")
+            note=$(diary_note +0 "$2")
             ;;
         tomorrow | tom | tm)
-            note=$(get_diary_note +1 "$2")
+            note=$(diary_note +1 "$2")
             ;;
         yesterday | ye | y)
-            note=$(get_diary_note -1 "$2")
+            note=$(diary_note -1 "$2")
             ;;
         bookmarks | bms | b)
-            note=$(get_bookmark "$2")
+            note=$(bookmark "$2")
             ;;
         history | hist | h)
             note=$(restore_hist)
-            ;;
-        "")
-            note=$(select_note)
             ;;
         -h | --help)
             help
@@ -202,8 +217,7 @@ main() {
     esac
 
     [ "$SHV_AUTO_CD" = true ] \
-        && cd "$SHV_PATH" \
-        || cd "$pwd"
+        && cd "$SHV_PATH"
 
     [ -z "$note" ] && exit 0
     edit_notes "$note"
