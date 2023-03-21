@@ -3,6 +3,7 @@
 set -e
 
 : "${SHV_EDITOR:=${EDITOR:=vi}}"
+: "${SHV_DEFAULT_CMD:=search}"
 : "${SHV_PICKER:="fzf -m --ansi --print-query --bind=alt-enter:print-query"}"
 : "${SHV_PATH:=$HOME/Documents/notes}"
 : "${SHV_DIARY_PATH:=$SHV_PATH/diary}"
@@ -156,6 +157,10 @@ main() {
     pwd="$PWD"
     cd "$HOME"
     case "$1" in
+    [ -z "$1" ] \
+        && sub="$SHV_DEFAULT_CMD" \
+        || sub="$1"
+    case "$sub" in
         diary)
             note=$(select_date)
             ;;

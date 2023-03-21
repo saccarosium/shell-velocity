@@ -1,6 +1,6 @@
 = 🚀 Shell Velocity
 
-A portable https://notational.net/[notational velocity] for your shell written in POSIX shell.
+A portable https://en.wikipedia.org/wiki/Notational_Velocity[notational velocity] for your shell written in POSIX shell.
 
 video::https://user-images.githubusercontent.com/96259932/223130698-f870c17c-f307-40c0-b48f-050173bf3d18.mp4[options=autoplay]
 
@@ -93,17 +93,25 @@ CAUTION: All the regex used here needs to be POSIX compatible.
 
 [,bash]
 ----
-# The editor used to edit your notes.
-export SHV_EDITOR=$EDITOR
-
-# If you want that your editor pwd is in the SHV_PATH
-export SHV_AUTO_CD=true
-
 # Path to notes
 export SHV_PATH="$HOME/Documents/notes"
 
 # Path to diary
 export SHV_DIARY_PATH="$SHV_PATH/diary"
+
+# Picker used to select notes
+export SHV_PICKER="fzf -m --ansi --print-query --bind=alt-enter:print-query"
+
+# Extensions to search. Space separated list.
+# NOTE: the first of the list will be used as your primary extention when creating a file.
+export SHV_EXTS="md adoc txt org"
+
+# Default subcommand run if calling shv without arguments (see list of subcommand above for more info).
+NOTE: subcommands that needs input will not work
+export SHV_DEFAULT_CMD=search
+
+# The editor used to edit your notes.
+export SHV_EDITOR=$EDITOR
 
 # Bookmarked files. Space separated list.
 export SHV_BMS="scratchpad.md"
@@ -112,16 +120,12 @@ export SHV_BMS="scratchpad.md"
 # For see how to modify this value check 'man date'
 export SHV_DATE_FMT="%Y-%m-%d"
 
-# Extensions to search. Space separated list.
-# NOTE: the first of the list will be used as your primary extention when creating a file.
-export SHV_EXTS="md adoc txt org"
-
 # Space separated list of ignored files and directories
 # NOTE: if you are trying to ignore a directory put an wildchar so it matches everything under it
 export SHV_IGNORE="./.obsidian/* ./.git/*"
 
-# Picker used to select notes
-export SHV_PICKER="fzf -m --ansi --print-query --bind=alt-enter:print-query"
+# If you want that your editor pwd is in the SHV_PATH
+export SHV_AUTO_CD=true
 
 # If you want that shv remember's your edited note history
 export SHV_HISTORY=true
