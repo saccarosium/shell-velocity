@@ -35,6 +35,13 @@ EOF
     exit 0
 }
 
+version() {
+    front="$(git rev-list --count HEAD)"
+    back="$(git rev-parse --short HEAD)"
+    printf "r%s.%s\n" "$front" "$back"
+    exit 0;
+}
+
 strip() {
     # Remove all leading white-space.
     # '${1%%[![:space:]]*}': Strip everything but leading white-space.
@@ -184,6 +191,9 @@ main() {
             ;;
         -h | --help)
             help
+            ;;
+        -v | --version)
+            version
             ;;
         *)
             die "\"$1\" unrecognized option"
