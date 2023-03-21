@@ -146,3 +146,16 @@ export SHV_AUTO_CD=true
 # If you want that shv remember's your edited note history
 export SHV_HISTORY=true
 ----
+
+== Philosophy
+
+[quote,scrod creator of notational_velocity]
+The reasoning behind Notational Velocity's present lack of multi-database support is that storing notes in separate databases would 1) Require the same kinds of decisions that category/folder-based organizers force upon their users (e.g., "Is this note going to be work-specific or home-specific?"), and 2) Defeat the point of instantaneous searching by requiring, ultimately, the user to repeat each search for every database in use.
+
++
++
+By providing a default directory, we offer (one) fix to the first issue.
+
+By searching the whole set of directories simultaneously, we handle the second.
+
+It also handles Notational Velocity's issue with multiple databases. UNIX does not allow repeated filenames in the same folder, but often the parent folder provides context, like in `workout/TODO.md` and `coding/TODO.md`.
