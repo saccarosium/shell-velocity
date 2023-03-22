@@ -88,6 +88,8 @@ parse() {
 # List files in dir
 # $1: directory
 get_files() {
+    pwd="$PWD"
+    cd "$HOME"
     query=""
     for ext in $SHV_EXTS; do
         query="${query:+${query} -o} -iname *.${ext}"
@@ -97,6 +99,7 @@ get_files() {
         ignore="${ignore:+${ignore}} -not -path ${ign}"
     done
     find "$1" -type f '(' $query ')' '(' $ignore ')'
+    cd "$pwd"
 }
 
 
