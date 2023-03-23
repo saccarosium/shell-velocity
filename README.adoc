@@ -49,11 +49,12 @@ NOTE: Every subcommand that uses your `$SHV_PICKER` is capable of creating a new
 [,bash]
 ----
 shv search <default> # search through all your notes
-shv select # select a note from your $SHV_PATH
+shv [select | sel] # select a note from your $SHV_PATH
+shv [bookmarks | bms | b] <number> # select one of your bookmarks
 shv diary # select a note from diary folder
+shv [yesterday | ye | y] <label> # edit yesterday diary note
 shv [today | t] <label> # edit todays diary note
 shv [tomorrow | tom | tm] <label> # edit tomorrow diary note
-shv [yesterday | ye | y] <label> # edit yesterday diary note
 shv [history | hist | h] # select notes from note editing history
 ----
 
@@ -81,7 +82,7 @@ Edit a file you edit often by simply using the number is located in `$SHV_BMS`
 
 [,bash]
 ----
-shv bookmarks 1 # By default will edit "stratchpad.md"
+shv bookmarks 1
 ----
 
 ==== diary

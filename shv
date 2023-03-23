@@ -11,9 +11,9 @@ set -e
 : "${SHV_EXTS:=md adoc txt org}"
 : "${SHV_DATE_FMT:=%Y-%m-%d}"
 : "${SHV_IGNORE:=./.obsidian/* ./.git/*}"
-: "${SHV_BMS:=scratchpad.md}"
 : "${SHV_AUTO_CD:=true}"
 : "${SHV_HISTORY:=true}"
+: "${SHV_BMS}"
 
 os=$(uname)
 ext=$(printf "%s" "$SHV_EXTS" | cut -d' ' -f1)
@@ -28,7 +28,7 @@ shv [-h|--help] <action>
 
 actions:
   search <default>
-  select
+  select | sel
   bookmarks | bms | b
   diary
   yesterday | ye | y
@@ -150,6 +150,7 @@ diary_note() {
 # Returns path to bookmarked file
 # $1: index of file in "array" (starts at 1)
 bookmark() {
+    [ -z "$SHV_BMS" ] && die "There are no bookmarked files"
     bmk=$(printf "%s" "$SHV_BMS" | cut -d' ' -f"$1")
     printf "%s/%s" "$SHV_PATH" "$bmk"
 }
