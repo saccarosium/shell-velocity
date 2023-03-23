@@ -144,7 +144,7 @@ diary_note() {
     date=$(get_date "$1")
     [ -z "$2" ] \
         && printf "%s/%s.%s" "$SHV_DIARY_PATH" "$date" "$ext" \
-        || printf "%s/%s_%s.%s" "$SHV_DIARY_PATH" "$2" "$date" "$ext"
+        || printf "%s/%s_%s.%s" "$SHV_DIARY_PATH" "$date" "$2" "$ext"
 }
 
 # Returns path to bookmarked file

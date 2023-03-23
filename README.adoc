@@ -91,11 +91,11 @@ Searches in your `$SHV_DIARY_PATH` for notes, and uses your picker to select wha
 
 ==== yesterday, today and tomorrow
 
-Get the corresponding daily note associated with the day. If passed a `label` that label will be prepended to the filename with an `_` character.
+Get the corresponding daily note associated with the day. If passed a `label` that label will be append it to the filename with an `_` character.
 
 [,bash]
 ----
-shv today school # It will edit the file school_2023-01-01.$SHV_EXT
+shv today school # It will edit the file 2023-01-01_school.$SHV_EXT
 ----
 
 ==== history
