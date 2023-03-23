@@ -56,6 +56,7 @@ NOTE: Every subcommand that uses your `$SHV_PICKER` is capable of creating a new
 
 [,bash]
 ----
+shv [capture | c] <strings> # dumps strings in your $SHV_CAPTURE_FILE (by default daily note from today)
 shv search <default> # search through all your notes
 shv [select | sel] # select a note from your $SHV_PATH
 shv [bookmarks | bms | b] <number> # select one of your bookmarks
@@ -110,6 +111,10 @@ shv today school # It will edit the file 2023-01-01_school.$SHV_EXT
 
 Searches through your edit history and uses your picker to select some notes.
 
+==== capture
+
+Puts what you gave as an argument into your `$SHV_CAPTURE_FILE` (by default today's daily note).
+
 == Customization
 
 NOTE: The values of the variables below are the defaults.
@@ -118,42 +123,45 @@ CAUTION: All the regex used here needs to be POSIX compatible.
 
 [,bash]
 ----
-# Path to notes
-export SHV_PATH="$HOME/Documents/notes"
-
-# Path to diary
-export SHV_DIARY_PATH="$SHV_PATH/diary"
-
-# Picker used to select notes
-export SHV_PICKER="fzf -m --ansi --print-query --bind=alt-enter:print-query"
-
-# Extensions to search. Space separated list.
-# NOTE: the first of the list will be used as your primary extention when creating a file.
-export SHV_EXTS="md adoc txt org"
-
-# Default subcommand run if calling shv without arguments (see list of subcommand above for more info).
-# NOTE: subcommands that needs input will not work
-export SHV_DEFAULT_CMD=search
-
-# The editor used to edit your notes.
-export SHV_EDITOR=$EDITOR
+# If you want that your editor pwd is in the SHV_PATH
+export SHV_AUTO_CD=true
 
 # Bookmarked files. Space separated list.
 export SHV_BMS=""
+
+# File used by capture command to dumps your input
+# NOTE: by default uses your daily note
+export SHV_CAPTURE_FILE=""
 
 # String passed to 'date' command.
 # For see how to modify this value check 'man date'
 export SHV_DATE_FMT="%Y-%m-%d"
 
+# Default subcommand run if calling shv without arguments (see list of subcommand above for more info).
+# NOTE: subcommands that needs input will not work
+export SHV_DEFAULT_CMD=search
+
+# Path to diary
+export SHV_DIARY_PATH="$SHV_PATH/diary"
+
+# The editor used to edit your notes.
+export SHV_EDITOR=$EDITOR
+
+# Extensions to search. Space separated list. # NOTE: the first of the list will be used as your primary extention when creating a file.
+export SHV_EXTS="md adoc txt org"
+
+# If you want that shv remember's your edited note history
+export SHV_HISTORY=true
+
 # Space separated list of ignored files and directories
 # NOTE: if you are trying to ignore a directory put an wildchar so it matches everything under it
 export SHV_IGNORE="./.obsidian/* ./.git/*"
 
-# If you want that your editor pwd is in the SHV_PATH
-export SHV_AUTO_CD=true
+# Path to notes
+export SHV_PATH="$HOME/Documents/notes"
 
-# If you want that shv remember's your edited note history
-export SHV_HISTORY=true
+# Picker used to select notes
+export SHV_PICKER="fzf -m --ansi --print-query --bind=alt-enter:print-query"
 ----
 
 == Philosophy

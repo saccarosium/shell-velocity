@@ -13,6 +13,7 @@ set -e
 : "${SHV_IGNORE:=./.obsidian/* ./.git/*}"
 : "${SHV_AUTO_CD:=true}"
 : "${SHV_HISTORY:=true}"
+: "${SHV_CAPTURE_FILE:=}"
 : "${SHV_BMS}"
 
 os=$(uname)
@@ -27,14 +28,15 @@ shell velocity an efficient note taking utility
 shv [-h|--help] <action>
 
 actions:
+  bookmarks | bms | b
+  capture | c
+  diary
+  history | hist | h
   search <default>
   select | sel
-  bookmarks | bms | b
-  diary
-  yesterday | ye | y
   today | t
   tomorrow | tom | tm
-  history | hist | h
+  yesterday | ye | y
 EOF
     exit 0
 }
@@ -43,7 +45,7 @@ version() {
     front="$(git rev-list --count HEAD)"
     back="$(git rev-parse --short HEAD)"
     printf "r%s.%s\n" "$front" "$back"
-    exit 0;
+    exit 0
 }
 
 # Echo to stderr and quit
@@ -102,7 +104,6 @@ get_files() {
     cd "$pwd"
 }
 
-
 # Returns the date of selected day by standard of date command
 # $1: n of days
 get_date() {
@@ -119,6 +120,13 @@ store_hist() {
 }
 
 ###### COMMANDS ######
+
+capture() {
+    [ -z "$SHV_CAPTURE_FILE" ] \
+        && file="$(diary_note +0)" \
+        || file="$SHV_CAPTURE_FILE"
+    printf "%s\n\n" "$*" >>"$file"
+}
 
 # Handler to search/create notes
 search_notes() {
@@ -207,6 +215,9 @@ main() {
             ;;
         history | hist | h)
             note=$(restore_hist)
+            ;;
+        capture | c)
+            capture "$(printf "%s" "$*" | sed "s/$1 //")"
             ;;
         -h | --help)
             help
