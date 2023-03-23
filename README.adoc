@@ -1,5 +1,13 @@
 = 🚀 Shell Velocity
 :toc:
+:prewrap:
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
 
 A portable https://en.wikipedia.org/wiki/Notational_Velocity[notational velocity] for your shell written in POSIX shell.
 
@@ -131,7 +139,7 @@ export SHV_DEFAULT_CMD=search
 export SHV_EDITOR=$EDITOR
 
 # Bookmarked files. Space separated list.
-export SHV_BMS="scratchpad.md"
+export SHV_BMS=""
 
 # String passed to 'date' command.
 # For see how to modify this value check 'man date'
@@ -153,8 +161,7 @@ export SHV_HISTORY=true
 [quote,scrod creator of notational_velocity]
 The reasoning behind Notational Velocity's present lack of multi-database support is that storing notes in separate databases would 1) Require the same kinds of decisions that category/folder-based organizers force upon their users (e.g., "Is this note going to be work-specific or home-specific?"), and 2) Defeat the point of instantaneous searching by requiring, ultimately, the user to repeat each search for every database in use.
 
-+
-+
+
 By providing a default directory, we offer (one) fix to the first issue.
 
 By searching the whole set of directories simultaneously, we handle the second.
