@@ -56,15 +56,7 @@ NOTE: Every subcommand that uses your `$SHV_PICKER` is capable of creating a new
 
 [,bash]
 ----
-shv [capture | c] <strings> # dumps strings in your $SHV_CAPTURE_FILE (by default daily note from today)
-shv search <default> # search through all your notes
-shv [select | sel] # select a note from your $SHV_PATH
-shv [bookmarks | bms | b] <number> # select one of your bookmarks
-shv diary # select a note from diary folder
-shv [yesterday | ye | y] <label> # edit yesterday diary note
-shv [today | t] <label> # edit todays diary note
-shv [tomorrow | tom | tm] <label> # edit tomorrow diary note
-shv [history | hist | h] # select notes from note editing history
+shv --help
 ----
 
 ==== no args
