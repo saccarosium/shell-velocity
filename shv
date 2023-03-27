@@ -3,19 +3,17 @@
 set -e
 # set -x
 
-: "${SHV_EDITOR:=${EDITOR:=vi}}"
-: "${SHV_DEFAULT_CMD:=search}"
-: "${SHV_PICKER:="fzf -m --ansi --print-query --bind=alt-enter:print-query"}"
-: "${SHV_PATH:=$HOME/Documents/notes}"
-: "${SHV_DIARY_PATH:=$SHV_PATH/diary}"
-: "${SHV_EXTS:=md adoc txt org}"
-: "${SHV_DATE_FMT:=%Y-%m-%d}"
-: "${SHV_IGNORE:=./.obsidian/* ./.git/*}"
-: "${SHV_AUTO_CD:=true}"
-: "${SHV_HISTORY:=true}"
-: "${SHV_CAPTURE_FILE:=}"
-: "${SHV_BMS}"
-
+editor="${SHV_EDITOR:=${EDITOR:=vi}}"
+subcmd="${SHV_DEFAULT_CMD:=search}"
+picker="${SHV_PICKER:="fzf -m --ansi --print-query --bind=alt-enter:print-query"}"
+path="${SHV_PATH:=$HOME/Documents/notes}"
+diary_path=${SHV_DIARY_PATH:=$SHV_PATH/diary}
+date_fmt=${SHV_DATE_FMT:=%Y-%m-%d}
+ignore=${SHV_IGNORE:=./.obsidian/* ./.git/*}
+auto_cd=${SHV_AUTO_CD:=true}
+history_on=${SHV_HISTORY:=true}
+capture_file="$SHV_CAPTURE_FILE"
+exts=${SHV_EXTS:=md adoc txt org}
 os=$(uname)
 ext=$(printf "%s" "$SHV_EXTS" | cut -d' ' -f1)
 histfile="${XDG_DATA_HOME:-$HOME/.local/share}/shv_history"
@@ -23,7 +21,6 @@ histfile="${XDG_DATA_HOME:-$HOME/.local/share}/shv_history"
 ###### UTILITY ######
 
 help() {
-# tag::help[]
     cat <<EOF
 shell velocity an efficient note taking utility
 shv [-h|--help] <action>
@@ -39,13 +36,12 @@ actions:
   tomorrow | tm
   yesterday | y
 EOF
-# end::help[]
     exit 0
 }
 
 version() {
-    front="$(git rev-list --count HEAD)"
-    back="$(git rev-parse --short HEAD)"
+    front=$(git rev-list --count HEAD)
+    back=$(git rev-parse --short HEAD)
     printf "r%s.%s\n" "$front" "$back"
     exit 0
 }
@@ -94,11 +90,11 @@ parse() {
 get_files() {
     set -f
     query=""
-    for ext in $SHV_EXTS; do
+    for ext in $exts; do
         query="${query:+${query} -o} -iname *.${ext}"
     done
     ignore=""
-    for ign in $SHV_IGNORE; do
+    for ign in $exts; do
         ignore="${ignore:+${ignore}} -not -path ${ign}"
     done
     find "$1" -type f '(' $query ')' '(' $ignore ')'
@@ -109,9 +105,9 @@ get_files() {
 # $1: n of days
 get_date() {
     if [ "$os" = "Linux" ]; then
-        date="$(date -d "$1 days" +"$SHV_DATE_FMT")"
+        date=$(date -d "$1 days" +"$date_fmt")
     else
-        date="$(date -v"$1"d +"$SHV_DATE_FMT")"
+        date=$(date -v"$1"d +"$date_fmt")
     fi
     printf "%s" "$date"
 }
@@ -130,13 +126,13 @@ store_hist() {
 bookmark() {
     [ -z "$SHV_BMS" ] && die "There are no bookmarked files"
     bmk=$(printf "%s" "$SHV_BMS" | cut -d' ' -f"$1")
-    printf "%s/%s" "$SHV_PATH" "$bmk"
+    printf "%s/%s" "$path" "$bmk"
 }
 
 capture() {
-    [ -z "$SHV_CAPTURE_FILE" ] \
-        && file="$(diary_note +0)" \
-        || file="$SHV_CAPTURE_FILE"
+    [ -z "$capture_file" ] \
+        && file=$(diary_note +0) \
+        || file="$capture_file"
     printf "%s\n\n" "$*" >>"$file"
 }
 
@@ -146,43 +142,43 @@ capture() {
 diary_note() {
     date=$(get_date "$1")
     if [ -z "$2" ]; then
-        printf "%s/%s.%s" "$SHV_DIARY_PATH" "$date" "$ext"
+        printf "%s/%s.%s" "$diary_path" "$date" "$ext"
     else
-        printf "%s/%s_%s.%s" "$SHV_DIARY_PATH" "$date" "$2" "$ext"
+        printf "%s/%s_%s.%s" "$diary_path" "$date" "$2" "$ext"
     fi
 }
 
 # Edit note with EDITOR
 # $*: Path to file to edit
 edit_notes() {
-    [ "$SHV_HISTORY" = true ] \
+    "$history_on" \
         && store_hist "$@"
-    $SHV_EDITOR $*
+    $editor $*
 }
 
 restore_hist() {
-    if [ "$SHV_HISTORY" = false ]; then
+    if ! "$history_on"; then
         die "history is not enabled"
     elif ! [ -r "$histfile" ]; then
         die "$histfile is not a redable"
     else
-        file=$(sort -u "$histfile" | sed "/^$/ d" | $SHV_PICKER)
+        file=$(sort -u "$histfile" | sed "/^$/ d" | $picker)
         printf "%s" "$file"
     fi
 }
 
 # Handler to search/create notes
 search_notes() {
-    sel=$(get_files "$SHV_PATH" | xargs -I {} grep -H "" {} | $SHV_PICKER | sed "s/:.*//g")
+    sel=$(get_files "$path" | xargs grep -H "" | $picker | sed "s/:.*//g")
     [ -z "$sel" ] && exit 1
-    file=$(parse "$sel" "$SHV_PATH")
+    file=$(parse "$sel" "$path")
     printf "%s" "$file"
 }
 
 # Handler to select/create notes
 # $1: directory to search
 select_notes() {
-    sel=$(get_files "$1" | $SHV_PICKER | tr '\n' '#')
+    sel=$(get_files "$1" | $picker | sed "s/\n/#/g")
     [ -z "$sel" ] && exit 1
     file=$(parse "$sel" "$1")
     printf "%s" "$file"
@@ -193,11 +189,9 @@ select_notes() {
 # Main function
 # $1: subcommands
 main() {
-    sub=$1
-    sub=${sub:=$SHV_DEFAULT_CMD}
-    [ "$SHV_AUTO_CD" = true ] && cd "$SHV_PATH"
-    [ -d "$SHV_PATH" ] || die "SHV_PATH doesn't exist"
-    case "$sub" in
+    [ -d "$path" ] || die "SHV_PATH doesn't exist"
+    "$auto_cd" && cd "$path"
+    case "${1:-$subcmd}" in
         bookmarks | b)
             note=$(bookmark "$2")
             ;;
@@ -206,7 +200,7 @@ main() {
             capture "${args##"$1" }"
             ;;
         diary)
-            note=$(select_notes "$SHV_DIARY_PATH")
+            note=$(select_notes "$diary_path")
             ;;
         history | h)
             note=$(restore_hist)
@@ -215,7 +209,7 @@ main() {
             note=$(search_notes)
             ;;
         select | sel)
-            note=$(select_notes "$SHV_PATH")
+            note=$(select_notes "$path")
             ;;
         today | t)
             note=$(diary_note +0 "$2")
