@@ -3,20 +3,20 @@
 set -e
 # set -x
 
-editor=${SHV_EDITOR:=${EDITOR:=vi}}
-subcmd=${SHV_DEFAULT_CMD:=search}
-picker=${SHV_PICKER:="fzf -m --ansi --print-query --bind=alt-enter:print-query"}
-path=${SHV_PATH:=$HOME/Documents/notes}
-diary_path=${SHV_DIARY_PATH:=$SHV_PATH/diary}
-date_fmt=${SHV_DATE_FMT:=%Y-%m-%d}
-ignore=${SHV_IGNORE:=./.obsidian/* ./.git/*}
-auto_cd=${SHV_AUTO_CD:=true}
-history_on=${SHV_HISTORY:=true}
+auto_cd=${SHV_AUTO_CD:-"true"}
 capture_file="$SHV_CAPTURE_FILE"
-exts=${SHV_EXTS:=md adoc txt org}
+date_fmt=${SHV_DATE_FMT:-"%Y-%m-%d"}
+diary_path=${SHV_DIARY_PATH:-"$SHV_PATH/diary"}
+editor=${SHV_EDITOR:-${EDITOR:=vi}}
+exts=${SHV_EXTS:-"md adoc txt org"}
+histfile="${XDG_DATA_HOME:-$HOME/.local/share}/shv_history"
+history_on=${SHV_HISTORY:-"true"}
+ignore=${SHV_IGNORE:-"./.obsidian/* ./.git/*"}
+path=${SHV_PATH:-"$HOME/Documents/notes"}
+picker=${SHV_PICKER:-"fzf -m --ansi --print-query --bind=alt-enter:print-query"}
+subcmd=${SHV_DEFAULT_CMD:-"search"}
 os=$(uname)
 ext=$(printf "%s" "$SHV_EXTS" | cut -d' ' -f1)
-histfile="${XDG_DATA_HOME:-$HOME/.local/share}/shv_history"
 
 ###### UTILITY ######
 
@@ -48,6 +48,13 @@ SUBCOMMANDS
     c, capture
         Puts what you gave as an argument into your SHV_CAPTURE_FILE (by
         default today's daily note).
+
+        Also if you pipe a string to shv the string will be captured in you
+        SHV_CAPTURE_FILE
+
+            pbpaste | shv
+
+            curl <some-webpage> | shv
 
     d, diary
         Searches in your SHV_DIARY_PATH for notes, and uses your picker to
@@ -88,6 +95,8 @@ ENVIROMENT
     SHV_BMS: space separated list specifing names of bookmarked files (default:"")
 
         export SHV_BMS="todo.md log.md"
+
+    SHV_CAPTURE_FILE: file where to store captured data (default:today's note)
 
     SHV_DATE_FMT: format used by the date command (default:%Y-%m-%d)
 
