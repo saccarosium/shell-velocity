@@ -3,10 +3,10 @@
 set -e
 # set -x
 
-editor="${SHV_EDITOR:=${EDITOR:=vi}}"
-subcmd="${SHV_DEFAULT_CMD:=search}"
-picker="${SHV_PICKER:="fzf -m --ansi --print-query --bind=alt-enter:print-query"}"
-path="${SHV_PATH:=$HOME/Documents/notes}"
+editor=${SHV_EDITOR:=${EDITOR:=vi}}
+subcmd=${SHV_DEFAULT_CMD:=search}
+picker=${SHV_PICKER:="fzf -m --ansi --print-query --bind=alt-enter:print-query"}
+path=${SHV_PATH:=$HOME/Documents/notes}
 diary_path=${SHV_DIARY_PATH:=$SHV_PATH/diary}
 date_fmt=${SHV_DATE_FMT:=%Y-%m-%d}
 ignore=${SHV_IGNORE:=./.obsidian/* ./.git/*}
@@ -20,21 +20,115 @@ histfile="${XDG_DATA_HOME:-$HOME/.local/share}/shv_history"
 
 ###### UTILITY ######
 
-help() {
-    cat <<EOF
-shell velocity an efficient note taking utility
-shv [-h|--help] <action>
+oneline_usage="usage: shv [SUBCOMMAND] [ARGS]"
 
-actions:
-  bookmarks | b
-  capture | c
-  diary
-  history | h
-  search <default>
-  select | sel
-  today | t
-  tomorrow | tm
-  yesterday | y
+usage() {
+    cat <<EOF
+$0: illegal subcommand -- $1
+$oneline_usage
+For more info run 'shv help'
+EOF
+    exit 0
+}
+
+help() {
+    less <<EOF
+NAME
+    shv
+
+SYNOPSIS
+    $oneline_usage
+
+SUBCOMMANDS
+
+    a, bookmarks
+        Edit a file you edit often by simply using the number is located in
+        SHV_BMS
+
+    c, capture
+        Puts what you gave as an argument into your SHV_CAPTURE_FILE (by
+        default today's daily note).
+
+    d, diary
+        Searches in your SHV_DIARY_PATH for notes, and uses your picker to
+        select what daily file to choose.
+
+    h, history
+        Searches through your edit history and uses your picker to select some
+        notes.
+
+    s, search
+        grep all the files with your SHV_EXTS in your SHV_PATH. If no
+        match is found, or you use the keybinding to create a note (if your
+        SHV_PICKER support keybindings), a new note will be created.
+
+    sel, select
+        Select one, or more, of your files by filename (a more traditional
+        fuzzy search through files).
+
+    t, today
+    tm, tomorrow
+    y, yesterday
+        Get the corresponding daily note associated with the day. If passed a
+        label that label will be append it to the filename with an '_'
+        character.
+
+    v, version
+        Prints version informations generated from git.
+
+    help
+        Open help page in less.
+
+ENVIROMENT
+
+    The script is configured and customized through enviroment variables.
+
+    SHV_AUTO_CD: specify if auto cd to SHV_PATH when edit file (default:true)
+
+    SHV_BMS: space separated list specifing names of bookmarked files (default:"")
+
+        export SHV_BMS="todo.md log.md"
+
+    SHV_DATE_FMT: format used by the date command (default:%Y-%m-%d)
+
+        export SHV_DATE_FMT="%d-%m-%Y"
+
+    SHV_DEFAULT_CMD: default command that run when not subcommand is specified (default:search)
+
+        export SHV_DEFAULT_CMD="select"
+
+    SHV_DIARY_PATH: path to diary notes (default:SHV_PATH/diary)
+
+    SHV_EDITOR: editor used to edit your notes. (default:EDITOR)
+
+    SHV_EXTS: space separated list of extentions to search for in SHV_PATH. The
+    first will be considered your primary extention and new notes will be
+    created with it (default:md adoc txt org)
+
+        export SHV_EXTS="markdown rmd txt"
+
+    SHV_HISTORY: specify if you want to save history of edited files (default:true)
+
+    SHV_IGNORE: space separated list for ignored directories and
+    files. (default:./.obsidian/* ./.git/*")
+
+        export SHV_IGNORE="./.git/* ./pdfs/*"
+
+    SHV_PATH: path to notes (default:~/Documents/notes)
+
+    SHV_PICKER: fuzzy finder/filter used to select notes
+    (default:fzf -m --ansi --print-query --bind=alt-enter:print-query")
+
+
+EXAMPLES
+
+    - Select the first bookmarked file
+
+        shv bookmark 1
+
+    - Open today's note with label 'work'
+
+        shv today work
 EOF
     exit 0
 }
@@ -192,43 +286,42 @@ main() {
     [ -d "$path" ] || die "SHV_PATH doesn't exist"
     "$auto_cd" && cd "$path"
     case "${1:-$subcmd}" in
-        bookmarks | b)
+        b | bookmarks)
             note=$(bookmark "$2")
             ;;
-        capture | c)
+        c | capture)
             args="$*"
             capture "${args##"$1" }"
             ;;
-        diary)
+        d | diary)
             note=$(select_notes "$diary_path")
             ;;
-        history | h)
+        h | history)
             note=$(restore_hist)
             ;;
         search)
             note=$(search_notes)
             ;;
-        select | sel)
+        sel | select)
             note=$(select_notes "$path")
             ;;
-        today | t)
+        t | today)
             note=$(diary_note +0 "$2")
             ;;
-        tomorrow | tm)
+        tm | tomorrow)
             note=$(diary_note +1 "$2")
             ;;
-        yesterday | y)
+        y | yesterday)
             note=$(diary_note -1 "$2")
             ;;
-        -h | --help)
+        help)
             help
             ;;
-        -v | --version)
+        v | version)
             version
             ;;
         *)
-            die "\"$1\" unrecognized option"
-            help
+            usage "$1"
             ;;
     esac
     [ -z "$note" ] && exit 0
