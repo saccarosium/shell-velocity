@@ -34,7 +34,7 @@ EOF
 help() {
     less <<EOF
 NAME
-    shv
+    shv - shell velocity
 
 SYNOPSIS
     $oneline_usage
