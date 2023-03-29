@@ -1,15 +1,7 @@
 = 🚀 Shell Velocity
 :toc:
-:prewrap:
-ifdef::env-github[]
-:tip-caption: :bulb:
-:note-caption: :information_source:
-:important-caption: :heavy_exclamation_mark:
-:caution-caption: :fire:
-:warning-caption: :warning:
-endif::[]
 
-A portable https://en.wikipedia.org/wiki/Notational_Velocity[notational velocity] for your shell written in POSIX shell.
+A portable https://notational.net/[notational velocity] for your shell written in POSIX shell.
 
 video::https://user-images.githubusercontent.com/96259932/223130698-f870c17c-f307-40c0-b48f-050173bf3d18.mp4[options=autoplay]
 
@@ -20,7 +12,7 @@ video::https://user-images.githubusercontent.com/96259932/223130698-f870c17c-f30
 * Uses whatever editor you want (even link:docs/visual-studio-code.adoc[Visual Studio Code])
 * Portable (runs on every POSIX compatible OS, see link:docs/tested-oses.adoc[Tested OSes])
 * Minimal (only a POSIX shell and the picker of your choice)
-* Nonintrusive (use markdown by default, but works also with your preferred markup languages such as: https://orgmode.org/[org], https://github.com/nvim-neorg/neorg[neorg], rest, https://asciidoc.org/[adoc], etc)
+* Nonintrusive (use markdown by default, but works also with your preferred markup languages such as: https://orgmode.org/[org], https://github.com/nvim-neorg/neorg[neorg], https://docutils.sourceforge.io/rst.html[rst], https://asciidoc.org/[adoc], etc)
 
 == Dependencies
 
@@ -47,6 +39,12 @@ mkdir -p ~/.local/bin
 curl https://raw.githubusercontent.com/saccarosium/shell-velocity/main/shv -o ~/.local/bin/shv
 chmod +x ~/.local/bin/shv
 ----
+
+== Usage
+
+The first design goal of this script is to make creating and searching notes as frictionless as possible. First you run `shv` without subcommands. You will be presented with a grep search of all your notes. Search for what you where looking for and if you don't find it you simply press enter and a new note will be created by your query.
+
+NOTE: For more commands and information run `shv help`
 
 == Philosophy
 
