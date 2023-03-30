@@ -16,7 +16,7 @@ path=${SHV_PATH:-"$HOME/Documents/notes"}
 picker=${SHV_PICKER:-"fzf -m --ansi --print-query --bind=alt-enter:print-query"}
 subcmd=${SHV_DEFAULT_CMD:-"search"}
 os=$(uname)
-ext=$(printf "%s" "$SHV_EXTS" | cut -d' ' -f1)
+ext=$(printf "%s" "$exts" | cut -d' ' -f1)
 
 ###### UTILITY ######
 
