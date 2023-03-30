@@ -116,6 +116,12 @@ ENVIROMENT
 
         export SHV_EXTS="markdown rmd txt"
 
+    SHV_DIARY_EXT: extention to be used only for your diary. For example you
+    could use only org for todos and you want your daily task to be writtern in
+    orgmode (default:"")
+
+        export SHV_DIARY_EXT="org"
+
     SHV_HISTORY: specify if you want to save history of edited files (default:true)
 
     SHV_IGNORE: space separated list for ignored directories and
@@ -244,6 +250,7 @@ capture() {
 # $2: label
 diary_note() {
     date=$(get_date "$1")
+    ext=${SHV_DIARY_EXT:-"$ext"}
     if [ -z "$2" ]; then
         printf "%s/%s.%s" "$diary_path" "$date" "$ext"
     else
