@@ -1,9 +1,13 @@
 = 🚀 Shell Velocity
-:toc:
+:toc: macro
 
 A portable https://notational.net/[notational velocity] for your shell written in POSIX shell.
 
 video::https://user-images.githubusercontent.com/96259932/223130698-f870c17c-f307-40c0-b48f-050173bf3d18.mp4[options=autoplay]
+
+---
+
+toc::[]
 
 == Features
 
