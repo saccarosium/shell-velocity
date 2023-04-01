@@ -279,7 +279,7 @@ restore_hist() {
 
 # Handler to search/create notes
 search_notes() {
-    sel=$(get_files "$path" | xargs grep -H "" | $picker | sed "s/:.*//g")
+    sel=$(get_files "$path" | xargs -I {} grep -H "" {} | $picker | sed "s/:.*//g")
     [ -z "$sel" ] && exit 1
     file=$(parse "$sel" "$path")
     printf "%s" "$file"
