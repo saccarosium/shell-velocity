@@ -9,8 +9,6 @@ date_fmt=${SHV_DATE_FMT:-"%Y-%m-%d"}
 diary_path=${SHV_DIARY_PATH:-"$SHV_PATH/diary"}
 editor=${SHV_EDITOR:-${EDITOR:=vi}}
 exts=${SHV_EXTS:-"md adoc txt org"}
-histfile="${XDG_DATA_HOME:-$HOME/.local/share}/shv_history"
-history_on=${SHV_HISTORY:-"true"}
 ignore=${SHV_IGNORE:-"./.obsidian/* ./.git/*"}
 path=${SHV_PATH:-"$HOME/Documents/notes"}
 picker=${SHV_PICKER:-"fzf -m --ansi --print-query --bind=alt-enter:print-query"}
@@ -59,10 +57,6 @@ SUBCOMMANDS
     d, diary
         Searches in your SHV_DIARY_PATH for notes, and uses your picker to
         select what daily file to choose.
-
-    h, history
-        Searches through your edit history and uses your picker to select some
-        notes.
 
     s, search
         grep all the files with your SHV_EXTS in your SHV_PATH. If no
@@ -121,8 +115,6 @@ ENVIROMENT
     orgmode (default:"")
 
         export SHV_DIARY_EXT="org"
-
-    SHV_HISTORY: specify if you want to save history of edited files (default:true)
 
     SHV_IGNORE: space separated list for ignored directories and
     files. (default:./.obsidian/* ./.git/*")
@@ -221,13 +213,6 @@ get_date() {
     printf "%s" "$date"
 }
 
-store_hist() {
-    files=$(printf "%s" "$@" | tr ' ' '\n')
-    dirname=$(dirname "$histfile")
-    [ -d "$dirname" ] \
-        && printf "%s\n" "$files" >>"$histfile"
-}
-
 ###### COMMANDS ######
 
 # Returns path to bookmarked file
@@ -259,25 +244,8 @@ diary_note() {
 }
 
 # Edit note with EDITOR
-# $*: Path to file to edit
-edit_notes() {
-    "$history_on" \
-        && store_hist "$@"
-    $editor $*
-}
-
-restore_hist() {
-    if ! "$history_on"; then
-        die "history is not enabled"
-    elif ! [ -r "$histfile" ]; then
-        die "$histfile is not a redable"
-    else
-        sel=$(sort -u "$histfile" | sed "/^$/ d" | $picker)
-        [ -z "$sel" ] && exit 0
-        sel=$(parse "$sel" "$path")
-        printf "%s" "$sel"
-    fi
-}
+# $*: Paths to files to edit
+edit_notes() { $editor $*; }
 
 # Handler to search/create notes
 search_notes() {
@@ -313,9 +281,6 @@ main() {
             ;;
         d | diary)
             note=$(select_notes "$diary_path")
-            ;;
-        h | history)
-            note=$(restore_hist)
             ;;
         search)
             note=$(search_notes)
