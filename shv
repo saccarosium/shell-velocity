@@ -272,15 +272,17 @@ restore_hist() {
     elif ! [ -r "$histfile" ]; then
         die "$histfile is not a redable"
     else
-        file=$(sort -u "$histfile" | sed "/^$/ d" | $picker)
-        printf "%s" "$file"
+        sel=$(sort -u "$histfile" | sed "/^$/ d" | $picker)
+        [ -z "$sel" ] && exit 0
+        sel=$(parse "$sel" "$path")
+        printf "%s" "$sel"
     fi
 }
 
 # Handler to search/create notes
 search_notes() {
     sel=$(get_files "$path" | xargs -I {} grep -H "" {} | $picker | sed "s/:.*//g")
-    [ -z "$sel" ] && exit 1
+    [ -z "$sel" ] && exit 0
     file=$(parse "$sel" "$path")
     printf "%s" "$file"
 }
@@ -289,7 +291,7 @@ search_notes() {
 # $1: directory to search
 select_notes() {
     sel=$(get_files "$1" | $picker | sed "s/\n/#/g")
-    [ -z "$sel" ] && exit 1
+    [ -z "$sel" ] && exit 0
     file=$(parse "$sel" "$1")
     printf "%s" "$file"
 }
