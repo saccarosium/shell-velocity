@@ -76,10 +76,10 @@ SUBCOMMANDS
         label that label will be append it to the filename with an '_'
         character.
 
-    v, version
+    version, -v, --version
         Prints version informations generated from git.
 
-    help
+    help, -h, --help
         Open help page in less.
 
 ENVIROMENT
@@ -298,10 +298,10 @@ main() {
         y | yesterday)
             note=$(diary_note -1 "$2")
             ;;
-        help)
+        help | --help | -h)
             help
             ;;
-        v | version)
+        version | --version | -v)
             version
             ;;
         *)
