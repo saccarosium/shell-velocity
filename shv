@@ -5,9 +5,8 @@ set -e
 
 auto_cd=${SHV_AUTO_CD:-"true"}
 capture_file="$SHV_CAPTURE_FILE"
-capture_str=${SHV_CAPTURE_STR:-"** TODO %s\n\n"}
+capture_str=${SHV_CAPTURE_STR:-"* TODO %s\n\n"}
 date_fmt=${SHV_DATE_FMT:-"%Y-%m-%d"}
-editor=${SHV_EDITOR:-${EDITOR:=vi}}
 exts=${SHV_EXTS:-"md adoc txt org"}
 ext=$(printf "%s" "$exts" | cut -d' ' -f1)
 ignore=${SHV_IGNORE:-"./.obsidian/* ./.git/*"}
@@ -226,7 +225,7 @@ bookmark() {
 
 capture() {
     [ -z "$capture_file" ] \
-        && file=$(diary_note +0) \
+        && file=$(journal_note +0) \
         || file="$capture_file"
     printf "$capture_str" "$*" >>"$file"
 }
@@ -246,7 +245,7 @@ diary_note() {
 
 # Edit note with EDITOR
 # $*: Paths to files to edit
-edit_notes() { $editor $*; }
+edit_notes() { ${SHV_EDITOR:-${EDITOR:=vi}} $*; }
 
 # Handler to search/create notes
 search_notes() {
@@ -290,13 +289,13 @@ main() {
             note=$(select_notes "$path")
             ;;
         t | today)
-            note=$(diary_note +0 "$2")
+            note=$(journal_note +0 "$2")
             ;;
         tm | tomorrow)
-            note=$(diary_note +1 "$2")
+            note=$(journal_note +1 "$2")
             ;;
         y | yesterday)
-            note=$(diary_note -1 "$2")
+            note=$(journal_note -1 "$2")
             ;;
         help | --help | -h)
             help
