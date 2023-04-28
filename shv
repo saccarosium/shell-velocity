@@ -233,7 +233,7 @@ capture() {
 # Returns the path to note of specified day
 # $1: n days
 # $2: label
-diary_note() {
+journal_note() {
     date=$(get_date "$1")
     ext=${SHV_DIARY_EXT:-"$ext"}
     if [ -z "$2" ]; then
