@@ -274,45 +274,81 @@ main() {
     case "${1:-$subcmd}" in
         b | bookmarks)
             note=$(bookmark "$2")
+while [ $# -gt 0 ]; do
+    case $1 in
+        --auto-cd)
+            auto_cd=true
+            shift
             ;;
-        c | capture)
-            args="$*"
-            capture "${args##"$1" }"
+        --no-auto-cd)
+            auto_cd=false
+            shift
             ;;
-        j | journal)
-            note=$(select_notes "$journal_path")
+        -p | --path)
+            path="$2"
+            shift
+            shift
             ;;
-        search)
-            note=$(search_notes)
+        -j | --journal-path)
+            journal_path="$2"
+            shift
+            shift
             ;;
-        sel | select)
-            note=$(select_notes "$path")
+        -i | --ignore)
+            ignore="$2"
+            shift
+            shift
             ;;
-        t | today)
-            note=$(journal_note +0 "$2")
+        -P | --picker)
+            picker="$2"
+            shift
+            shift
             ;;
-        tm | tomorrow)
-            note=$(journal_note +1 "$2")
+        -e | --exts)
+            exts="$2"
+            shift
+            shift
             ;;
-        y | yesterday)
-            note=$(journal_note -1 "$2")
-            ;;
-        help | --help | -h)
+        --help | -h)
             help
             ;;
-        version | --version | -v)
+        --version | -v)
             version
             ;;
         *)
-            usage "$1"
+            break
             ;;
     esac
-    [ -z "$note" ] && exit 0
-    edit_notes "$note"
-}
+done
 
 if [ -p /dev/stdin ]; then
     capture "$(cat -)"
 else
     main "$@"
 fi
+case ${1:-$subcmd} in
+    b | bookmarks)
+        note=$(bookmark "$2")
+        ;;
+    j | journal)
+        note=$(select_notes "$journal_path")
+        ;;
+    s | search)
+        note=$(search_notes)
+        ;;
+    sel | select)
+        note=$(select_notes "$path")
+        ;;
+    t | today)
+        note=$(journal_note +0 "$2")
+        ;;
+    tm | tomorrow)
+        note=$(journal_note +1 "$2")
+        ;;
+    y | yesterday)
+        note=$(journal_note -1 "$2")
+        ;;
+    *)
+        usage "$1"
+        ;;
+esac
