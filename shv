@@ -1,152 +1,15 @@
 #!/bin/sh
 
 set -e
-# set -x
-
-auto_cd=${SHV_AUTO_CD:-"true"}
-capture_file="$SHV_CAPTURE_FILE"
-capture_str=${SHV_CAPTURE_STR:-"* TODO %s\n\n"}
-date_fmt=${SHV_DATE_FMT:-"%Y-%m-%d"}
-exts=${SHV_EXTS:-"md adoc txt org"}
-ext=$(printf "%s" "$exts" | cut -d' ' -f1)
-ignore=${SHV_IGNORE:-"./.obsidian/* ./.git/*"}
-journal_path=${SHV_DIARY_PATH:-"$SHV_PATH/journal"}
-os=$(uname)
-path=${SHV_PATH:-"$HOME/Documents/notes"}
-picker=${SHV_PICKER:-"fzf -m --ansi --print-query --bind=alt-enter:print-query"}
-subcmd=${SHV_DEFAULT_CMD:-"search"}
 
 ###### UTILITY ######
-
-oneline_usage="usage: shv [SUBCOMMAND] [ARGS]"
 
 usage() {
     cat <<EOF
 $0: illegal subcommand -- $1
-$oneline_usage
-For more info run 'shv help'
+usage: shv [FLAGS] [SUBCOMMAND] [ARGS]
+For more info run 'shv --help'
 EOF
-    exit 0
-}
-
-help() {
-    less <<EOF
-NAME
-    shv - shell velocity
-
-SYNOPSIS
-    $oneline_usage
-
-SUBCOMMANDS
-
-    a, bookmarks
-        Edit a file you edit often by simply using the number is located in
-        SHV_BMS
-
-    c, capture
-        Puts what you gave as an argument into your SHV_CAPTURE_FILE (by
-        default today's daily note). following your SHV_CAPTURE_STR (by default
-        "** TODO %s\n\n")
-
-        Also if you pipe a string to shv the string will be captured in you
-        SHV_CAPTURE_FILE
-
-            pbpaste | shv
-
-            curl <some-webpage> | shv
-
-    j, journal
-        Searches in your SHV_JOURNAL_PATH for notes, and uses your picker to
-        select what daily file to choose.
-
-    s, search
-        grep all the files with your SHV_EXTS in your SHV_PATH. If no
-        match is found, or you use the keybinding to create a note (if your
-        SHV_PICKER support keybindings), a new note will be created.
-
-    sel, select
-        Select one, or more, of your files by filename (a more traditional
-        fuzzy search through files).
-
-    t, today
-    tm, tomorrow
-    y, yesterday
-        Get the corresponding daily note associated with the day. If passed a
-        label that label will be append it to the filename with an '_'
-        character.
-
-    version, -v, --version
-        Prints version informations generated from git.
-
-    help, -h, --help
-        Open help page in less.
-
-ENVIROMENT
-
-    The script is configured and customized through enviroment variables.
-
-    SHV_AUTO_CD: specify if auto cd to SHV_PATH when edit file (default:true)
-
-    SHV_BMS: space separated list specifing names of bookmarked files (default:"")
-
-        export SHV_BMS="todo.md log.md"
-
-    SHV_CAPTURE_FILE: file where to store captured data (default:today's note)
-
-    SHV_CAPTURE_STR: format of input string (default:"** TODO %s\n\n")
-
-    SHV_DATE_FMT: format used by the date command (default:%Y-%m-%d)
-
-        export SHV_DATE_FMT="%d-%m-%Y"
-
-    SHV_DEFAULT_CMD: default command that run when not subcommand is specified (default:search)
-
-        export SHV_DEFAULT_CMD="select"
-
-    SHV_JOURNAL_PATH: path to journal notes (default:SHV_PATH/journal)
-
-    SHV_EDITOR: editor used to edit your notes. (default:EDITOR)
-
-    SHV_EXTS: space separated list of extentions to search for in SHV_PATH. The
-    first will be considered your primary extention and new notes will be
-    created with it (default:md adoc txt org)
-
-        export SHV_EXTS="markdown rmd txt"
-
-    SHV_JOURNAL_EXT: extention to be used only for your journal. For example you
-    could use only org for todos and you want your daily task to be writtern in
-    orgmode (default:"")
-
-        export SHV_JOURNAL_EXT="org"
-
-    SHV_IGNORE: space separated list for ignored directories and
-    files. (default:./.obsidian/* ./.git/*")
-
-        export SHV_IGNORE="./.git/* ./pdfs/*"
-
-    SHV_PATH: path to notes (default:~/Documents/notes)
-
-    SHV_PICKER: fuzzy finder/filter used to select notes
-    (default:fzf -m --ansi --print-query --bind=alt-enter:print-query")
-
-
-EXAMPLES
-
-    - Select the first bookmarked file
-
-        shv bookmark 1
-
-    - Open today's note with label 'work'
-
-        shv today work
-EOF
-    exit 0
-}
-
-version() {
-    front=$(git rev-list --count HEAD)
-    back=$(git rev-parse --short HEAD)
-    printf "r%s.%s\n" "$front" "$back"
     exit 0
 }
 
@@ -154,22 +17,15 @@ version() {
 die() { printf '%s: %s.\n' "$0" "$1" >&2 && exit 1; }
 
 strip() {
-    # Remove all leading white-space.
-    # '${1%%[![:space:]]*}': Strip everything but leading white-space.
-    # '${1#${XXX}}': Remove the white-space from the start of the string.
     str="${1#"${1%%[![:space:]]*}"}"
-    # Remove all trailing white-space.
-    # '${trim##*[![:space:]]}': Strip everything but trailing white-space.
-    # '${trim%${XXX}}': Remove the white-space from the end of the string.
     str="${str%"${str##*[![:space:]]}"}"
-    printf "%s" "$str"
+    printf "%s\n" "$str"
 }
 
 # Normalize string in an usable state
 # $1: String
 normalize() {
-    str=$(strip "$1" | sed "s/\n/#/g; s/\ /-/g; s/\n/#/g; s/#/\s/g")
-    printf "%s" "$str"
+    strip "$1" | sed "s/\n/#/g; s/\ /$normalize_ch/g; s/\n/#/g; s/#/\s/g"
 }
 
 # Parse output of fuctions and return string of files
@@ -178,12 +34,12 @@ normalize() {
 parse() {
     args=$(normalize "$1")
     for i in $args; do
-        [ -f "$i" ] \
-            && file=${file:+"$file "}$i \
-            || tmp="$2/$i.$ext"
+        [ -f "$i" ] &&
+            file=${file:+"$file "}$i ||
+            tmp="$2/$i.$ext"
     done
-    [ -z "$file" ] && file=$tmp
-    printf "%s" "$file"
+    : "${file:=$tmp}"
+    printf "%s\n" "$file"
 }
 
 # List files in dir
@@ -206,74 +62,51 @@ get_files() {
 # $1: n of days
 get_date() {
     if [ "$os" = "Linux" ]; then
-        date=$(date -d "$1 days" +"$date_fmt")
+        date -d "$1 days" +"$date_fmt"
     else
-        date=$(date -v"$1"d +"$date_fmt")
+        date -v"$1"d +"$date_fmt"
     fi
-    printf "%s" "$date"
 }
 
 ###### COMMANDS ######
-
-# Returns path to bookmarked file
-# $1: index of file in "array" (starts at 1)
-bookmark() {
-    [ -z "$SHV_BMS" ] && die "There are no bookmarked files"
-    bmk=$(printf "%s" "$SHV_BMS" | cut -d' ' -f"$1")
-    printf "%s/%s" "$path" "$bmk"
-}
-
-capture() {
-    [ -z "$capture_file" ] \
-        && file=$(journal_note +0) \
-        || file="$capture_file"
-    printf "$capture_str" "$*" >>"$file"
-}
 
 # Returns the path to note of specified day
 # $1: n days
 # $2: label
 journal_note() {
     date=$(get_date "$1")
-    ext=${SHV_DIARY_EXT:-"$ext"}
-    if [ -z "$2" ]; then
-        printf "%s/%s.%s" "$journal_path" "$date" "$ext"
-    else
-        printf "%s/%s_%s.%s" "$journal_path" "$date" "$2" "$ext"
-    fi
+    [ -z "$2" ] && normalize_ch=""
+    printf "%s/%s$normalize_ch%s.%s" "$journal_path" "$date" "$2" "$ext"
 }
-
-# Edit note with EDITOR
-# $*: Paths to files to edit
-edit_notes() { ${SHV_EDITOR:-${EDITOR:=vi}} $*; }
 
 # Handler to search/create notes
 search_notes() {
     sel=$(get_files "$path" | xargs -I {} grep -H "" {} | $picker | sed "s/:.*//g")
     [ -z "$sel" ] && exit 0
-    file=$(parse "$sel" "$path")
-    printf "%s" "$file"
+    parse "$sel" "$path"
 }
 
-# Handler to select/create notes
 # $1: directory to search
 select_notes() {
     sel=$(get_files "$1" | $picker | sed "s/\n/#/g")
     [ -z "$sel" ] && exit 0
-    file=$(parse "$sel" "$1")
-    printf "%s" "$file"
+    parse "$sel" "$1"
 }
 
 ###### MAIN ######
 
-# Main function
-# $1: subcommands
-main() {
-    [ -d "$path" ] || die "SHV_PATH doesn't exist"
-    "$auto_cd" && cd "$path"
-    case "${1:-$subcmd}" in
-        b | bookmarks)
-            note=$(bookmark "$2")
+auto_cd=${SHV_AUTO_CD:-"true"}
+date_fmt=${SHV_DATE_FMT:-"%Y-%m-%d"}
+exts=${SHV_EXTS:-"md adoc txt org"}
+ext=$(printf "%s" "$exts" | cut -d' ' -f1)
+ignore=${SHV_IGNORE:-"./.obsidian/* ./.git/*"}
+journal_path=${SHV_DIARY_PATH:-"$SHV_PATH"}
+os=$(uname)
+path=${SHV_PATH:-"$HOME/Documents/notes"}
+picker=${SHV_PICKER:-"fzf -m --ansi --print-query --bind=alt-enter:print-query"}
+subcmd=${SHV_DEFAULT_CMD:-"grep"}
+normalize_ch=${SHV_NORMALIZE_CH:-"-"}
+
 while [ $# -gt 0 ]; do
     case $1 in
         --auto-cd)
@@ -299,6 +132,11 @@ while [ $# -gt 0 ]; do
             shift
             shift
             ;;
+        -c | --normalize-ch)
+            normalize_ch="$2"
+            shift
+            shift
+            ;;
         -P | --picker)
             picker="$2"
             shift
@@ -309,31 +147,17 @@ while [ $# -gt 0 ]; do
             shift
             shift
             ;;
-        --help | -h)
-            help
-            ;;
-        --version | -v)
-            version
-            ;;
         *)
             break
             ;;
     esac
 done
 
-if [ -p /dev/stdin ]; then
-    capture "$(cat -)"
-else
-    main "$@"
-fi
 case ${1:-$subcmd} in
-    b | bookmarks)
-        note=$(bookmark "$2")
-        ;;
     j | journal)
         note=$(select_notes "$journal_path")
         ;;
-    s | search)
+    g | grep)
         note=$(search_notes)
         ;;
     sel | select)
@@ -352,3 +176,7 @@ case ${1:-$subcmd} in
         usage "$1"
         ;;
 esac
+
+[ -z "$note" ] && exit 0
+"$auto_cd" && cd "$path"
+eval "${SHV_EDITOR:-${EDITOR:-vi}} $note"
