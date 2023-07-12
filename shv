@@ -2,13 +2,24 @@
 
 set -e
 
+os=$(uname)
+auto_cd=${SHV_AUTO_CD:-"true"}
+ext=${SHV_EXT:-"md"}
+date_fmt=${SHV_DATE_FMT:-"%Y-%m-%d"}
+ignore=${SHV_IGNORE:-"./.obsidian/* ./.git/* ./*.pdf"}
+journal_path=${SHV_DIARY_PATH:-"$SHV_PATH"}
+path=${SHV_PATH:-${XDG_DATA_HOME:-${HOME}/.local/share}/notes}
+picker=${SHV_PICKER:-"fzf -m --ansi --print-query --bind=alt-enter:print-query"}
+subcmd=${SHV_DEFAULT_CMD:-"select"}
+normalize_ch=${SHV_NORMALIZE_CH:-"-"}
+
 ###### UTILITY ######
 
 usage() {
     cat <<EOF
 $0: illegal subcommand -- $1
 usage: shv [FLAGS] [SUBCOMMAND] [ARGS]
-For more info run 'shv --help'
+to have more info see: https://github.com/saccarosium/shell-velocity/blob/main/docs/shv.adoc
 EOF
     exit 0
 }
@@ -35,27 +46,19 @@ parse() {
     args=$(normalize "$1")
     for i in $args; do
         [ -f "$i" ] &&
-            file=${file:+"$file "}$i ||
+            file="$file $i" ||
             tmp="$2/$i.$ext"
     done
-    : "${file:=$tmp}"
-    printf "%s\n" "$file"
+    printf "%s\n" "${file:-$tmp}"
 }
 
 # List files in dir
 # $1: directory
 get_files() {
-    set -f
-    query=""
-    for ext in $exts; do
-        query="${query:+${query} -o} -iname *.${ext}"
+    for ign in $ignore; do
+        tmp="$tmp -not -path $ign"
     done
-    ignore=""
-    for ign in $exts; do
-        ignore="${ignore:+${ignore}} -not -path ${ign}"
-    done
-    find "$1" -type f '(' $query ')' '(' $ignore ')'
-    set +f
+    eval "find $1 -type f $tmp"
 }
 
 # Returns the date of selected day by standard of date command
@@ -76,7 +79,7 @@ get_date() {
 journal_note() {
     date=$(get_date "$1")
     [ -z "$2" ] && normalize_ch=""
-    printf "%s/%s$normalize_ch%s.%s" "$journal_path" "$date" "$2" "$ext"
+    printf "%s/%s$normalize_ch%s.%s\n" "$journal_path" "$date" "$2" "$ext"
 }
 
 # Handler to search/create notes
@@ -94,18 +97,6 @@ select_notes() {
 }
 
 ###### MAIN ######
-
-auto_cd=${SHV_AUTO_CD:-"true"}
-date_fmt=${SHV_DATE_FMT:-"%Y-%m-%d"}
-exts=${SHV_EXTS:-"md adoc txt org"}
-ext=$(printf "%s" "$exts" | cut -d' ' -f1)
-ignore=${SHV_IGNORE:-"./.obsidian/* ./.git/*"}
-journal_path=${SHV_DIARY_PATH:-"$SHV_PATH"}
-os=$(uname)
-path=${SHV_PATH:-"$HOME/Documents/notes"}
-picker=${SHV_PICKER:-"fzf -m --ansi --print-query --bind=alt-enter:print-query"}
-subcmd=${SHV_DEFAULT_CMD:-"grep"}
-normalize_ch=${SHV_NORMALIZE_CH:-"-"}
 
 while [ $# -gt 0 ]; do
     case $1 in
@@ -142,8 +133,8 @@ while [ $# -gt 0 ]; do
             shift
             shift
             ;;
-        -e | --exts)
-            exts="$2"
+        -e | --ext)
+            ext="$2"
             shift
             shift
             ;;
@@ -160,7 +151,7 @@ case ${1:-$subcmd} in
     g | grep)
         note=$(search_notes)
         ;;
-    sel | select)
+    s | select)
         note=$(select_notes "$path")
         ;;
     t | today)
@@ -177,6 +168,5 @@ case ${1:-$subcmd} in
         ;;
 esac
 
-[ -z "$note" ] && exit 0
 "$auto_cd" && cd "$path"
-eval "${SHV_EDITOR:-${EDITOR:-vi}} $note"
+[ -n "$note" ] && eval "${EDITOR:-vi} $note"

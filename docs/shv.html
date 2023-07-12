@@ -461,9 +461,34 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 <div class="dlist">
 <dl>
-<dt class="hdlist1"><strong>-h, --help</strong></dt>
+<dt class="hdlist1"><strong>--auto-cd</strong></dt>
+<dt class="hdlist1"><strong>--no-auto-cd</strong></dt>
 <dd>
-<p>Open help page in less.</p>
+<p>see <em>SHV_AUTO_CD</em></p>
+</dd>
+<dt class="hdlist1"><strong>-p, --path</strong></dt>
+<dd>
+<p>see <em>SHV_PATH</em></p>
+</dd>
+<dt class="hdlist1"><strong>-j, --journal-path</strong></dt>
+<dd>
+<p>see <em>SHV_JOURNAL_PATH</em></p>
+</dd>
+<dt class="hdlist1"><strong>-i, --ignore</strong></dt>
+<dd>
+<p>see <em>SHV_IGNORE</em></p>
+</dd>
+<dt class="hdlist1"><strong>-c, --normalize-ch</strong></dt>
+<dd>
+<p>set <em>SHV_NORMALIZE_CH</em></p>
+</dd>
+<dt class="hdlist1"><strong>-P, --picker</strong></dt>
+<dd>
+<p>see <em>SHV_PICKER</em></p>
+</dd>
+<dt class="hdlist1"><strong>-e, --ext</strong></dt>
+<dd>
+<p>see <em>SHV_EXT</em></p>
 </dd>
 </dl>
 </div>
@@ -474,21 +499,16 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="sectionbody">
 <div class="dlist">
 <dl>
-<dt class="hdlist1"><strong>a, bookmarks</strong></dt>
-<dd>
-<p>Edit a file you edit often by simply using the number is located in
-<em>SHV_BMS</em></p>
-</dd>
 <dt class="hdlist1"><strong>j, journal</strong></dt>
 <dd>
 <p>Searches in your <em>SHV_JOURNAL_PATH</em> for notes, and uses your picker to
 select what daily file to choose.</p>
 </dd>
-<dt class="hdlist1"><strong>s, search</strong></dt>
+<dt class="hdlist1"><strong>g, grep</strong></dt>
 <dd>
-<p>grep all the files with your <em>SHV_EXTS</em> in your <em>SHV_PATH</em>. If no
-match is found, or you use the keybinding to create a note (if your
-<em>SHV_PICKER</em> support keybindings), a new note will be created.</p>
+<p>grep all the files in your <em>SHV_PATH</em>. If no match is found, or you use the
+keybinding to create a note (if your <em>SHV_PICKER</em> support keybindings), a new
+note will be created.</p>
 </dd>
 <dt class="hdlist1"><strong>sel, select</strong></dt>
 <dd>
@@ -500,8 +520,7 @@ fuzzy search through files).</p>
 <dt class="hdlist1"><strong>y, yesterday</strong></dt>
 <dd>
 <p>Get the corresponding daily note associated with the day. If passed a
-label that label will be append it to the filename with an '_'
-character.</p>
+label, it will be append it to the filename.</p>
 </dd>
 </dl>
 </div>
@@ -517,7 +536,7 @@ character.</p>
 <dl>
 <dt class="hdlist1"><strong>SHV_AUTO_CD</strong></dt>
 <dd>
-<p>specify if auto cd to <em>SHV_PATH</em> when edit file (default:true)</p>
+<p>specify if auto cd to <em>SHV_PATH</em> when edit file (default: <code>true</code>)</p>
 </dd>
 <dt class="hdlist1"><strong>SHV_DATE_FMT</strong></dt>
 <dd>
@@ -530,7 +549,7 @@ character.</p>
 </dd>
 <dt class="hdlist1"><strong>SHV_DEFAULT_CMD</strong></dt>
 <dd>
-<p>default command that run when not subcommand is specified (default: <code>search</code>)</p>
+<p>default command that run when not subcommand is specified (default: <code>select</code>)</p>
 <div class="literalblock">
 <div class="content">
 <pre>export SHV_DEFAULT_CMD="select"</pre>
@@ -541,15 +560,10 @@ character.</p>
 <dd>
 <p>path to journal notes (default: <code>$SHV_PATH/journal</code>)</p>
 </dd>
-<dt class="hdlist1"><strong>SHV_EDITOR</strong></dt>
+<dt class="hdlist1"><strong>SHV_EXT</strong></dt>
 <dd>
-<p>editor used to edit your notes. (default: <code>$EDITOR</code>)</p>
-</dd>
-<dt class="hdlist1"><strong>SHV_EXTS</strong></dt>
-<dd>
-<p>space separated list of extentions to search for in SHV_PATH. The first will
-be considered your primary extention and new notes will be created with it
-(default: <code>md adoc txt org</code>)</p>
+<p>Your primary extention for when you create new notes.
+(default: <code>md</code>)</p>
 <div class="literalblock">
 <div class="content">
 <pre>export SHV_EXTS="markdown rmd txt"</pre>
@@ -559,7 +573,7 @@ be considered your primary extention and new notes will be created with it
 <dt class="hdlist1"><strong>SHV_IGNORE</strong></dt>
 <dd>
 <p>space separated list for ignored directories and files.
-(default: <code>./.obsidian/* ./.git/*</code>)</p>
+(default: <code>./.obsidian/* ./.git/* ./*.pdf</code>)</p>
 <div class="literalblock">
 <div class="content">
 <pre>export SHV_IGNORE="./.git/* ./pdfs/*"</pre>
@@ -568,7 +582,7 @@ be considered your primary extention and new notes will be created with it
 </dd>
 <dt class="hdlist1"><strong>SHV_PATH</strong></dt>
 <dd>
-<p>path to notes (default: <code>~/Documents/notes</code>)</p>
+<p>path to notes (default: <code>$XDG_DATA_HOME/notes</code>)</p>
 </dd>
 <dt class="hdlist1"><strong>SHV_PICKER</strong></dt>
 <dd>
@@ -599,7 +613,7 @@ be considered your primary extention and new notes will be created with it
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2023-07-12 19:06:12 +0200
+Last updated 2023-07-13 01:02:51 +0200
 </div>
 </div>
 </body>
