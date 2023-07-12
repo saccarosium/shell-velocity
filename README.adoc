@@ -12,11 +12,15 @@ toc::[]
 == Features
 
 * Removes cognitive load by combining the note creation and note searching
-* Customizable (use your preferred fuzzy finder or file picker; see link:docs/tested-pickers.adoc[tested pickers])
-* Uses whatever editor you want (even link:docs/visual-studio-code.adoc[Visual Studio Code])
-* Portable (runs on every POSIX compatible OS, see link:docs/tested-oses.adoc[Tested OSes])
+* Customizable (use your preferred fuzzy finder or file picker; see
+  link:docs/tested-pickers.adoc[tested pickers])
+* Portable (runs on every POSIX compatible OS)
 * Minimal (only a POSIX shell and the picker of your choice)
-* Nonintrusive (use markdown by default, but works also with your preferred markup languages such as: https://orgmode.org/[org], https://github.com/nvim-neorg/neorg[neorg], https://docutils.sourceforge.io/rst.html[rst], https://asciidoc.org/[adoc], etc)
+* Nonintrusive (use markdown by default, but works also with your preferred
+  markup languages such as: https://orgmode.org/[org],
+  https://github.com/nvim-neorg/neorg[neorg],
+  https://docutils.sourceforge.io/rst.html[rst], https://asciidoc.org/[adoc],
+  etc)
 
 == Dependencies
 
@@ -46,18 +50,30 @@ chmod +x ~/.local/bin/shv
 
 == Usage
 
-The first design goal of this script is to make creating and searching notes as frictionless as possible. First you run `shv` without subcommands. You will be presented with a grep search of all your notes. Search for what you where looking for and if you don't find it you simply press enter and a new note will be created by your query.
+NOTE: The documentation is under `./docs/shv.adoc`. It is in HTML and asciidoc
+format choose what you like more.
 
-NOTE: For more commands and information run `shv help`
+The first design goal of this script is to make creating and searching notes as
+frictionless as possible. First you run `shv` without subcommands. You will be
+presented with a grep search of all your notes. Search for what you where
+looking for and if you don't find it you simply press enter and a new note will
+be created by your query.
 
 == Philosophy
 
 [quote,scrod creator of notational_velocity]
-The reasoning behind Notational Velocity's present lack of multi-database support is that storing notes in separate databases would 1) Require the same kinds of decisions that category/folder-based organizers force upon their users (e.g., "Is this note going to be work-specific or home-specific?"), and 2) Defeat the point of instantaneous searching by requiring, ultimately, the user to repeat each search for every database in use.
+The reasoning behind Notational Velocity's present lack of multi-database
+support is that storing notes in separate databases would 1) Require the same
+kinds of decisions that category/folder-based organizers force upon their users
+(e.g., "Is this note going to be work-specific or home-specific?"), and 2)
+Defeat the point of instantaneous searching by requiring, ultimately, the user
+to repeat each search for every database in use.
 
 
 By providing a default directory, we offer (one) fix to the first issue.
 
 By searching the whole set of directories simultaneously, we handle the second.
 
-It also handles Notational Velocity's issue with multiple databases. UNIX does not allow repeated filenames in the same folder, but often the parent folder provides context, like in `workout/TODO.md` and `coding/TODO.md`.
+It also handles Notational Velocity's issue with multiple databases. UNIX does
+not allow repeated filenames in the same folder, but often the parent folder
+provides context, like in `workout/TODO.md` and `coding/TODO.md`.

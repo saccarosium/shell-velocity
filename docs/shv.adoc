@@ -1,0 +1,94 @@
+= shv(1)
+:doctype: manpage
+:man manual: Asciidoctor Manual
+
+== Name
+
+shv - shell velocity
+
+== Synopsis
+
+*shv* [_FLAGS_] [_SUBCOMMANDS_] [_ARGS_]
+
+== Flags
+
+This modify values that normally you will set in an enviroment variable.
+
+*-h, --help*::
+  Open help page in less.
+
+== Subcommands
+
+*a, bookmarks*::
+  Edit a file you edit often by simply using the number is located in
+  _SHV_BMS_
+
+*j, journal*::
+  Searches in your _SHV_JOURNAL_PATH_ for notes, and uses your picker to
+  select what daily file to choose.
+
+*s, search*::
+  grep all the files with your _SHV_EXTS_ in your _SHV_PATH_. If no
+  match is found, or you use the keybinding to create a note (if your
+  _SHV_PICKER_ support keybindings), a new note will be created.
+
+*sel, select*::
+  Select one, or more, of your files by filename (a more traditional
+  fuzzy search through files).
+
+*t, today*::
+*tm, tomorrow*::
+*y, yesterday*::
+  Get the corresponding daily note associated with the day. If passed a
+  label that label will be append it to the filename with an '_'
+  character.
+
+== Enviroment
+
+The script is configured and customized through enviroment variables.
+
+*SHV_AUTO_CD*::
+  specify if auto cd to _SHV_PATH_ when edit file (default:true)
+
+*SHV_DATE_FMT*::
+  format used by the date command (default: `%Y-%m-%d`)
+
+  export SHV_DATE_FMT="%d-%m-%Y"
+
+*SHV_DEFAULT_CMD*::
+  default command that run when not subcommand is specified (default: `search`)
+
+  export SHV_DEFAULT_CMD="select"
+
+*SHV_JOURNAL_PATH*::
+  path to journal notes (default: `$SHV_PATH/journal`)
+
+*SHV_EDITOR*::
+  editor used to edit your notes. (default: `$EDITOR`)
+
+*SHV_EXTS*::
+  space separated list of extentions to search for in SHV_PATH. The first will
+  be considered your primary extention and new notes will be created with it
+  (default: `md adoc txt org`)
+
+  export SHV_EXTS="markdown rmd txt"
+
+*SHV_IGNORE*::
+  space separated list for ignored directories and files.
+  (default: `./.obsidian/* ./.git/*`)
+
+  export SHV_IGNORE="./.git/* ./pdfs/*"
+
+*SHV_PATH*::
+  path to notes (default: `~/Documents/notes`)
+
+*SHV_PICKER*::
+  fuzzy finder/filter used to select notes (default: `fzf -m --ansi --print-query
+  --bind=alt-enter:print-query`)
+
+
+== EXAMPLES
+
+- Open today's note with label *_work_*
+
+  shv today work
