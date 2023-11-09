@@ -7,7 +7,7 @@ auto_cd=${SHV_AUTO_CD:-"true"}
 ext=${SHV_EXT:-"md"}
 date_fmt=${SHV_DATE_FMT:-"%Y-%m-%d"}
 ignore=${SHV_IGNORE:-"./.obsidian/* ./.git/* ./*.pdf"}
-journal_path=${SHV_DIARY_PATH:-"$SHV_PATH"}
+journal_path=${SHV_JOURNAL_PATH:-"$SHV_PATH"}
 path=${SHV_PATH:-${XDG_DATA_HOME:-${HOME}/.local/share}/notes}
 picker=${SHV_PICKER:-"fzf -m --ansi --print-query --bind=alt-enter:print-query"}
 subcmd=${SHV_DEFAULT_CMD:-"select"}
