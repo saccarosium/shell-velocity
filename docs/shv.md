@@ -94,6 +94,12 @@ T, e script is configured and customized through enviroment variables.
 
   export SHV_IGNORE="./.git/* ./pdfs/*"
 
+**SHV_NORMALIZE_CH**
+
+: character used to replace spaces in filename (default: `-`)
+
+  example: "hello world.md" -> "hello-world.md"
+
 **SHV_PATH**
 
 : path to notes (default: `$XDG_DATA_HOME/notes`)

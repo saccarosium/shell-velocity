@@ -81,6 +81,11 @@ space separated list for ignored directories and files.
 .PP
 export SHV_IGNORE=\[lq]./.git/* ./pdfs/*\[rq]
 .TP
+\f[B]SHV_NORMALIZE_CH\f[R]
+character used to replace spaces in filename (default: \f[CR]-\f[R])
+.PP
+example: \[lq]hello world.md\[rq] -> \[lq]hello-world.md\[rq]
+.TP
 \f[B]SHV_PATH\f[R]
 path to notes (default: \f[CR]$XDG_DATA_HOME/notes\f[R])
 .TP
