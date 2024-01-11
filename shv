@@ -12,6 +12,7 @@ path=${SHV_PATH:-${XDG_DATA_HOME:-${HOME}/.local/share}/notes}
 picker=${SHV_PICKER:-"fzf -m --ansi --print-query --bind=alt-enter:print-query"}
 subcmd=${SHV_DEFAULT_CMD:-"select"}
 normalize_ch=${SHV_NORMALIZE_CH:-"-"}
+grep_cmd=${SHV_GREP_CMD:-"$(type rg >/dev/null 2>/dev/null && echo 'rg -H' || echo 'grep -H')"}
 
 ###### UTILITY ######
 
@@ -84,7 +85,7 @@ journal_note() {
 
 # Handler to search/create notes
 search_notes() {
-    sel=$(get_files "$path" | xargs -I {} grep -H "" {} | $picker | sed "s/:.*//g")
+    sel=$(get_files "$path" | xargs -I {} $grep_cmd "" {} | $picker | sed "s/:.*//g")
     [ -z "$sel" ] && exit 0
     parse "$sel" "$path"
 }
@@ -100,72 +101,77 @@ select_notes() {
 
 while [ $# -gt 0 ]; do
     case $1 in
-        --auto-cd)
-            auto_cd=true
-            shift
-            ;;
-        --no-auto-cd)
-            auto_cd=false
-            shift
-            ;;
-        -p | --path)
-            path="$2"
-            shift
-            shift
-            ;;
-        -j | --journal-path)
-            journal_path="$2"
-            shift
-            shift
-            ;;
-        -i | --ignore)
-            ignore="$2"
-            shift
-            shift
-            ;;
-        -c | --normalize-ch)
-            normalize_ch="$2"
-            shift
-            shift
-            ;;
-        -P | --picker)
-            picker="$2"
-            shift
-            shift
-            ;;
-        -e | --ext)
-            ext="$2"
-            shift
-            shift
-            ;;
-        *)
-            break
-            ;;
+    --auto-cd)
+        auto_cd=true
+        shift
+        ;;
+    --no-auto-cd)
+        auto_cd=false
+        shift
+        ;;
+    -p | --path)
+        path="$2"
+        shift
+        shift
+        ;;
+    -j | --journal-path)
+        journal_path="$2"
+        shift
+        shift
+        ;;
+    -i | --ignore)
+        ignore="$2"
+        shift
+        shift
+        ;;
+    -c | --normalize-ch)
+        normalize_ch="$2"
+        shift
+        shift
+        ;;
+    -P | --picker)
+        picker="$2"
+        shift
+        shift
+        ;;
+    -g | --grep_cmd)
+        grep_cmd="$2"
+        shift
+        shift
+        ;;
+    -e | --ext)
+        ext="$2"
+        shift
+        shift
+        ;;
+    *)
+        break
+        ;;
     esac
 done
 
 case ${1:-$subcmd} in
-    j | journal)
-        note=$(select_notes "$journal_path")
-        ;;
-    g | grep)
-        note=$(search_notes)
-        ;;
-    s | select)
-        note=$(select_notes "$path")
-        ;;
-    t | today)
-        note=$(journal_note +0 "$2")
-        ;;
-    tm | tomorrow)
-        note=$(journal_note +1 "$2")
-        ;;
-    y | yesterday)
-        note=$(journal_note -1 "$2")
-        ;;
-    *)
-        usage "$1"
-        ;;
+j | journal)
+    note=$(select_notes "$journal_path")
+    ;;
+g | grep)
+    note=$(search_notes)
+    ;;
+s | select)
+    note=$(select_notes "$path")
+    ;;
+t | today)
+    note=$(journal_note +0 "$2")
+    ;;
+tm | tomorrow)
+    note=$(journal_note +1 "$2")
+    ;;
+y | yesterday)
+    note=$(journal_note -1 "$2")
+    ;;
+*)
+    usage "$1"
+    ;;
 esac
 
 "$auto_cd" && cd "$path"

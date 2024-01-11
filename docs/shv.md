@@ -40,6 +40,10 @@ This modify values that normally you will set in an enviroment variable.
 
 : see _SHV_EXT_
 
+**-g**, **--grep-cmd**
+
+: see _SHV_GREP_CMD_
+
 ## Subcommands
 
 **j**, **journal**
@@ -108,6 +112,9 @@ T, e script is configured and customized through enviroment variables.
 
 : fuzzy finder/filter used to select notes (default: `fzf -m --ansi --print-query --bind=alt-enter:print-query`)
 
+**SHV_GREP_CMD**
+
+: command used by the '**grep**' subcommand (default: `rg -H` or `grep -H`)
 
 ## EXAMPLES
 
