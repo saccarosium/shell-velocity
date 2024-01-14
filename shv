@@ -12,7 +12,7 @@ path=${SHV_PATH:-${XDG_DATA_HOME:-${HOME}/.local/share}/notes}
 picker=${SHV_PICKER:-"fzf -m --ansi --print-query --bind=alt-enter:print-query"}
 subcmd=${SHV_DEFAULT_CMD:-"select"}
 normalize_ch=${SHV_NORMALIZE_CH:-"-"}
-grep_cmd=${SHV_GREP_CMD:-"$(type rg >/dev/null 2>/dev/null && echo 'rg -H' || echo 'grep -H')"}
+grep_cmd=${SHV_GREP_CMD:-"$(command -v rg >/dev/null 2>/dev/null && echo 'rg -H' || echo 'grep -H')"}
 
 ###### UTILITY ######
 
