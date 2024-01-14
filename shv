@@ -11,25 +11,21 @@ journal_path=${SHV_JOURNAL_PATH:-"$SHV_PATH"}
 path=${SHV_PATH:-${XDG_DATA_HOME:-${HOME}/.local/share}/notes}
 subcmd=${SHV_DEFAULT_CMD:-"select"}
 normalize_ch=${SHV_NORMALIZE_CH:-"-"}
-grep_cmd=${SHV_GREP_CMD:-"$(command -v rg >/dev/null 2>/dev/null && echo 'rg -H' || echo 'grep -H')"}
-
-picker=${SHV_PICKER:-"fzf -m --ansi --print-query --bind=alt-enter:print-query"}
+grep_cmd=${SHV_GREP_CMD:-"$(command -v rg >/dev/null 2>/dev/null && echo 'rg --smart-case --files-with-matches --' || echo 'grep --recursive --files-with-matches')"}
 
 if command -v rg > /dev/null; then
   previewer="[ ! -z {} ] && rg --pretty --context 3 -- {q} {1}"
-elif command -v ugrep > /dev/null; then
-  previewer="[ ! -z {} ] && ugrep --pretty --context 3 -- {q} {1}"
 elif command -v bat > /dev/null; then
   previewer="bat --color=always --style=${BAT_STYLE:-numbers} --pager=never -- {1}"
 else
   previewer='head -- {1}'
 fi
-default_opts=${SHV_FZF_DEFAULT_OPTS:-"$FZF_DEFAULT_OPTS --delimiter=':' --preview='$previewer'"}
+fzf_default_opts=${SHV_FZF_DEFAULT_OPTS:-"$FZF_DEFAULT_OPTS -m --ansi --print-query --bind=alt-enter:print-query --preview='$previewer'"}
 
 ###### UTILITY ######
 
 usage() {
-    cat <<EOF
+  cat <<EOF
     $0: illegal subcommand -- $1
     usage: shv [FLAGS] [SUBCOMMAND] [ARGS]
     to have more info see: https://github.com/saccarosium/shell-velocity/blob/main/docs/shv.adoc
@@ -97,15 +93,21 @@ journal_note() {
 
 # Handler to search/create notes
 search_notes() {
-  FZF_DEFAULT_OPTS="$default_opts"
-  sel=$(get_files "$path" | xargs -I {} $grep_cmd "" {} | $picker | sed "s/:.*//g")
-  [ -z "$sel" ] && exit 0
-  parse "$sel" "$path"
-}
+  local result
+  sel="$(
+  FZF_DEFAULT_COMMAND="$grep_cmd '$1' $path" \
+    FZF_DEFAULT_OPTS="$fzf_default_opts" \
+    fzf \
+    --disabled --query="$1" --delimiter=':' \
+    --bind="change:reload:$grep_cmd {q} $path"
+      )"
+      [ -z "$sel" ] && exit 0
+      parse "$sel" "$path"
+    }
 
 # $1: directory to search
 select_notes() {
-  sel=$(get_files "$1" | $picker | sed "s/\n/#/g")
+  sel=$(get_files "$1" | FZF_DEFAULT_OPTS="$fzf_default_opts" fzf | sed "s/\n/#/g")
   [ -z "$sel" ] && exit 0
   parse "$sel" "$1"
 }
@@ -139,11 +141,6 @@ while [ $# -gt 0 ]; do
       ;;
     -c | --normalize-ch)
       normalize_ch="$2"
-      shift
-      shift
-      ;;
-    -P | --picker)
-      picker="$2"
       shift
       shift
       ;;
