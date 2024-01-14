@@ -9,67 +9,79 @@ date_fmt=${SHV_DATE_FMT:-"%Y-%m-%d"}
 ignore=${SHV_IGNORE:-"./.obsidian/* ./.git/* ./*.pdf"}
 journal_path=${SHV_JOURNAL_PATH:-"$SHV_PATH"}
 path=${SHV_PATH:-${XDG_DATA_HOME:-${HOME}/.local/share}/notes}
-picker=${SHV_PICKER:-"fzf -m --ansi --print-query --bind=alt-enter:print-query"}
 subcmd=${SHV_DEFAULT_CMD:-"select"}
 normalize_ch=${SHV_NORMALIZE_CH:-"-"}
 grep_cmd=${SHV_GREP_CMD:-"$(command -v rg >/dev/null 2>/dev/null && echo 'rg -H' || echo 'grep -H')"}
+
+picker=${SHV_PICKER:-"fzf -m --ansi --print-query --bind=alt-enter:print-query"}
+
+if command -v rg > /dev/null; then
+  previewer="[ ! -z {} ] && rg --pretty --context 3 -- {q} {1}"
+elif command -v ugrep > /dev/null; then
+  previewer="[ ! -z {} ] && ugrep --pretty --context 3 -- {q} {1}"
+elif command -v bat > /dev/null; then
+  previewer="bat --color=always --style=${BAT_STYLE:-numbers} --pager=never -- {1}"
+else
+  previewer='head -- {1}'
+fi
+default_opts=${SHV_FZF_DEFAULT_OPTS:-"$FZF_DEFAULT_OPTS --delimiter=':' --preview='$previewer'"}
 
 ###### UTILITY ######
 
 usage() {
     cat <<EOF
-$0: illegal subcommand -- $1
-usage: shv [FLAGS] [SUBCOMMAND] [ARGS]
-to have more info see: https://github.com/saccarosium/shell-velocity/blob/main/docs/shv.adoc
+    $0: illegal subcommand -- $1
+    usage: shv [FLAGS] [SUBCOMMAND] [ARGS]
+    to have more info see: https://github.com/saccarosium/shell-velocity/blob/main/docs/shv.adoc
 EOF
-    exit 0
+exit 0
 }
 
 # Echo to stderr and quit
 die() { printf '%s: %s.\n' "$0" "$1" >&2 && exit 1; }
 
 strip() {
-    str="${1#"${1%%[![:space:]]*}"}"
-    str="${str%"${str##*[![:space:]]}"}"
-    printf "%s\n" "$str"
+  str="${1#"${1%%[![:space:]]*}"}"
+  str="${str%"${str##*[![:space:]]}"}"
+  printf "%s\n" "$str"
 }
 
 # Normalize string in an usable state
 # $1: String
 normalize() {
-    strip "$1" | sed "s/\n/#/g; s/\ /$normalize_ch/g; s/\n/#/g; s/#/\s/g"
+  strip "$1" | sed "s/\n/#/g; s/\ /$normalize_ch/g; s/\n/#/g; s/#/\s/g"
 }
 
 # Parse output of fuctions and return string of files
 # $1: filenames
 # $2: directory
 parse() {
-    args=$(normalize "$1")
-    for i in $args; do
-        [ -f "$i" ] &&
-            file="$file $i" ||
-            tmp="$2/$i.$ext"
+  args=$(normalize "$1")
+  for i in $args; do
+    [ -f "$i" ] &&
+      file="$file $i" ||
+      tmp="$2/$i.$ext"
     done
     printf "%s\n" "${file:-$tmp}"
-}
+  }
 
 # List files in dir
 # $1: directory
 get_files() {
-    for ign in $ignore; do
-        tmp="$tmp -not -path $ign"
-    done
-    eval "find $1 -type f $tmp"
+  for ign in $ignore; do
+    tmp="$tmp -not -path $ign"
+  done
+  eval "find $1 -type f $tmp"
 }
 
 # Returns the date of selected day by standard of date command
 # $1: n of days
 get_date() {
-    if [ "$os" = "Linux" ]; then
-        date -d "$1 days" +"$date_fmt"
-    else
-        date -v"$1"d +"$date_fmt"
-    fi
+  if [ "$os" = "Linux" ]; then
+    date -d "$1 days" +"$date_fmt"
+  else
+    date -v"$1"d +"$date_fmt"
+  fi
 }
 
 ###### COMMANDS ######
@@ -78,98 +90,99 @@ get_date() {
 # $1: n days
 # $2: label
 journal_note() {
-    date=$(get_date "$1")
-    [ -z "$2" ] && normalize_ch=""
-    printf "%s/%s$normalize_ch%s.%s\n" "$journal_path" "$date" "$2" "$ext"
+  date=$(get_date "$1")
+  [ -z "$2" ] && normalize_ch=""
+  printf "%s/%s$normalize_ch%s.%s\n" "$journal_path" "$date" "$2" "$ext"
 }
 
 # Handler to search/create notes
 search_notes() {
-    sel=$(get_files "$path" | xargs -I {} $grep_cmd "" {} | $picker | sed "s/:.*//g")
-    [ -z "$sel" ] && exit 0
-    parse "$sel" "$path"
+  FZF_DEFAULT_OPTS="$default_opts"
+  sel=$(get_files "$path" | xargs -I {} $grep_cmd "" {} | $picker | sed "s/:.*//g")
+  [ -z "$sel" ] && exit 0
+  parse "$sel" "$path"
 }
 
 # $1: directory to search
 select_notes() {
-    sel=$(get_files "$1" | $picker | sed "s/\n/#/g")
-    [ -z "$sel" ] && exit 0
-    parse "$sel" "$1"
+  sel=$(get_files "$1" | $picker | sed "s/\n/#/g")
+  [ -z "$sel" ] && exit 0
+  parse "$sel" "$1"
 }
 
 ###### MAIN ######
 
 while [ $# -gt 0 ]; do
-    case $1 in
+  case $1 in
     --auto-cd)
-        auto_cd=true
-        shift
-        ;;
+      auto_cd=true
+      shift
+      ;;
     --no-auto-cd)
-        auto_cd=false
-        shift
-        ;;
+      auto_cd=false
+      shift
+      ;;
     -p | --path)
-        path="$2"
-        shift
-        shift
-        ;;
+      path="$2"
+      shift
+      shift
+      ;;
     -j | --journal-path)
-        journal_path="$2"
-        shift
-        shift
-        ;;
+      journal_path="$2"
+      shift
+      shift
+      ;;
     -i | --ignore)
-        ignore="$2"
-        shift
-        shift
-        ;;
+      ignore="$2"
+      shift
+      shift
+      ;;
     -c | --normalize-ch)
-        normalize_ch="$2"
-        shift
-        shift
-        ;;
+      normalize_ch="$2"
+      shift
+      shift
+      ;;
     -P | --picker)
-        picker="$2"
-        shift
-        shift
-        ;;
+      picker="$2"
+      shift
+      shift
+      ;;
     -g | --grep_cmd)
-        grep_cmd="$2"
-        shift
-        shift
-        ;;
+      grep_cmd="$2"
+      shift
+      shift
+      ;;
     -e | --ext)
-        ext="$2"
-        shift
-        shift
-        ;;
+      ext="$2"
+      shift
+      shift
+      ;;
     *)
-        break
-        ;;
-    esac
+      break
+      ;;
+  esac
 done
 
 case ${1:-$subcmd} in
-j | journal)
+  j | journal)
     note=$(select_notes "$journal_path")
     ;;
-g | grep)
+  g | grep)
     note=$(search_notes)
     ;;
-s | select)
+  s | select)
     note=$(select_notes "$path")
     ;;
-t | today)
+  t | today)
     note=$(journal_note +0 "$2")
     ;;
-tm | tomorrow)
+  tm | tomorrow)
     note=$(journal_note +1 "$2")
     ;;
-y | yesterday)
+  y | yesterday)
     note=$(journal_note -1 "$2")
     ;;
-*)
+  *)
     usage "$1"
     ;;
 esac
