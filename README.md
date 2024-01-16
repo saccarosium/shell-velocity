@@ -45,11 +45,7 @@ sh -c "$(printf '%s\n remove\n' "$(curl -fs 'https://raw.githubusercontent.com/s
 
 ## Usage
 
-> **Note** 
-> In `docs` you can find the manual in markdown, html and groff. Choose the one you like.
-
-The first design goal of this script is to make creating and searching notes as frictionless as possible. First you run `shv` without subcommands. You will be presented with a grep search of all your notes. Search for what you where looking for and if you don't find it you simply press enter and a new note will be created by your query.
-
+If you used the install script just run `man shv`. If you didn't you can read the documentation at `docs/shv.md`.
 
 ## Philosophy
 
