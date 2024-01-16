@@ -8,9 +8,8 @@ https://user-images.githubusercontent.com/96259932/223130698-f870c17c-f307-40c0-
 
 * [Features](#features)
 * [Dependencies](#dependencies)
-* [Installation](#installation)
-  * [Arch Linux (AUR)](#arch-linux-aur)
-  * [Manual](#manual)
+* [Install](#install)
+* [Uninstall](#uninstall)
 * [Usage](#usage)
 * [Philosophy](#philosophy)
 
@@ -29,23 +28,19 @@ https://user-images.githubusercontent.com/96259932/223130698-f870c17c-f307-40c0-
 * POSIX utils
 * [`fzf`][FZF] or your favorite picker (e.g. fzy, rofi, dmenu, etc)
 
-## Installation
-
-### Arch Linux (AUR)
-
-```bash
-yay -S shell-velocity-git
-```
-
-### Manual
+## Install
 
 > **Important**
 > Make sure that `~/.local/bin` is in your `PATH`.
 
 ```bash
-mkdir -p ~/.local/bin
-curl https://raw.githubusercontent.com/saccarosium/shell-velocity/main/shv -o ~/.local/bin/shv
-chmod +x ~/.local/bin/shv
+sh -c "$(printf '%s\n install\n' "$(curl -fs 'https://raw.githubusercontent.com/saccarosium/shell-velocity/main/install.sh')")"
+```
+
+## Uninstall
+
+```bash
+sh -c "$(printf '%s\n remove\n' "$(curl -fs 'https://raw.githubusercontent.com/saccarosium/shell-velocity/main/install.sh')")"
 ```
 
 ## Usage
