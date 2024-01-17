@@ -2,17 +2,17 @@
 
 set -e
 
-os=$(uname)
-auto_cd=${SHV_AUTO_CD:-"true"}
-ext=${SHV_EXT:-"md"}
-date_fmt=${SHV_DATE_FMT:-"%Y-%m-%d"}
-ignore=${SHV_IGNORE:-"./.obsidian/* ./.git/* ./*.pdf"}
-journal_path=${SHV_JOURNAL_PATH:-"$SHV_PATH"}
-path=${SHV_PATH:-${XDG_DATA_HOME:-${HOME}/.local/share}/notes}
-picker=${SHV_PICKER:-"fzf -m --ansi --print-query --bind=alt-enter:print-query"}
-subcmd=${SHV_DEFAULT_CMD:-"select"}
-normalize_ch=${SHV_NORMALIZE_CH:-"-"}
-grep_cmd=${SHV_GREP_CMD:-"$(type rg >/dev/null 2>/dev/null && echo 'rg -H' || echo 'grep -H')"}
+OS=$(uname)
+AUTO_CD=${SHV_AUTO_CD:-"true"}
+EXT=${SHV_EXT:-"md"}
+DATE_FMT=${SHV_DATE_FMT:-"%Y-%m-%d"}
+IGNORE=${SHV_IGNORE:-"./.obsidian/* ./.git/* ./*.pdf"}
+JOURNAL_PATH=${SHV_JOURNAL_PATH:-"$SHV_PATH"}
+NOTE_PATH=${SHV_PATH:-${XDG_DATA_HOME:-${HOME}/.local/share}/notes}
+PICKER=${SHV_PICKER:-"fzf -m --ansi --print-query --bind=alt-enter:print-query"}
+SUBCMD=${SHV_DEFAULT_CMD:-"select"}
+NORMALIZE_CH=${SHV_NORMALIZE_CH:-"-"}
+GREP_CMD=${SHV_GREP_CMD:-"$(type rg >/dev/null 2>/dev/null && echo 'rg -H' || echo 'grep -H')"}
 
 ###### UTILITY ######
 
@@ -39,7 +39,7 @@ strip() {
 # Normalize string in an usable state
 # $1: String
 normalize() {
-    strip "$1" | sed "s/\n/#/g; s/\ /$normalize_ch/g; s/\n/#/g; s/#/\s/g"
+    strip "$1" | sed "s/\n/#/g; s/\ /$NORMALIZE_CH/g; s/\n/#/g; s/#/\s/g"
 }
 
 # Parse output of fuctions and return string of files
@@ -50,7 +50,7 @@ parse() {
     for i in $args; do
         [ -f "$i" ] &&
             file="$file $i" ||
-            tmp="$2/$i.$ext"
+            tmp="$2/$i.$EXT"
     done
     printf "%s\n" "${file:-$tmp}"
 }
@@ -58,8 +58,8 @@ parse() {
 # List files in dir
 # $1: directory
 get_files() {
-    for ign in $ignore; do
         tmp="$tmp -not -path $ign"
+    for ign in $IGNORE; do
     done
     eval "find $1 -type f $tmp"
 }
@@ -67,10 +67,10 @@ get_files() {
 # Returns the date of selected day by standard of date command
 # $1: n of days
 get_date() {
-    if [ "$os" = "Linux" ]; then
-        date -d "$1 days" +"$date_fmt"
+    if [ "$OS" = "Linux" ]; then
+        date -d "$1 days" +"$DATE_FMT"
     else
-        date -v"$1"d +"$date_fmt"
+        date -v"$1"d +"$DATE_FMT"
     fi
 }
 
@@ -81,20 +81,20 @@ get_date() {
 # $2: label
 journal_note() {
     date=$(get_date "$1")
-    [ -z "$2" ] && normalize_ch=""
-    printf "%s/%s$normalize_ch%s.%s\n" "$journal_path" "$date" "$2" "$ext"
+    [ -z "$2" ] && NORMALIZE_CH=""
+    printf "%s/%s$NORMALIZE_CH%s.%s\n" "$JOURNAL_PATH" "$date" "$2" "$EXT"
 }
 
 # Handler to search/create notes
 search_notes() {
-    sel=$(get_files "$path" | xargs -I {} $grep_cmd "" {} | $picker | sed "s/:.*//g")
+    sel=$(get_files "$NOTE_PATH" | xargs -I {} $GREP_CMD "" {} | $PICKER | sed "s/:.*//g")
     [ -z "$sel" ] && exit 0
-    parse "$sel" "$path"
+    parse "$sel" "$NOTE_PATH"
 }
 
 # $1: directory to search
 select_notes() {
-    sel=$(get_files "$1" | $picker | sed "s/\n/#/g")
+    sel=$(get_files "$1" | $PICKER | sed "s/\n/#/g")
     [ -z "$sel" ] && exit 0
     parse "$sel" "$1"
 }
@@ -104,30 +104,30 @@ select_notes() {
 while [ $# -gt 0 ]; do
     case $1 in
     --auto-cd)
-        auto_cd=true
+        AUTO_CD=true
         shift
         ;;
     --no-auto-cd)
-        auto_cd=false
+        AUTO_CD=false
         shift
         ;;
-    -p | --path)
-        path="$2"
+    -p | --note-path)
+        NOTE_PATH="$2"
         shift
         shift
         ;;
     -j | --journal-path)
-        journal_path="$2"
+        JOURNAL_PATH="$2"
         shift
         shift
         ;;
     -i | --ignore)
-        ignore="$2"
+        IGNORE="$2"
         shift
         shift
         ;;
     -c | --normalize-ch)
-        normalize_ch="$2"
+        NORMALIZE_CH="$2"
         shift
         shift
         ;;
@@ -137,12 +137,12 @@ while [ $# -gt 0 ]; do
         shift
         ;;
     -g | --grep_cmd)
-        grep_cmd="$2"
+        GREP_CMD="$2"
         shift
         shift
         ;;
     -e | --ext)
-        ext="$2"
+        EXT="$2"
         shift
         shift
         ;;
@@ -152,15 +152,15 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-case ${1:-$subcmd} in
+case ${1:-$SUBCMD} in
 j | journal)
-    note=$(select_notes "$journal_path")
+    note=$(select_notes "$JOURNAL_PATH")
     ;;
 g | grep)
     note=$(search_notes)
     ;;
 s | select)
-    note=$(select_notes "$path")
+    note=$(select_notes "$NOTE_PATH")
     ;;
 t | today)
     note=$(journal_note +0 "$2")
@@ -176,5 +176,5 @@ y | yesterday)
     ;;
 esac
 
-"$auto_cd" && cd "$path"
+"$AUTO_CD" && cd "$NOTE_PATH"
 [ -n "$note" ] && eval "${EDITOR:-vi} $note"
