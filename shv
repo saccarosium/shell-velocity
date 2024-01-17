@@ -20,7 +20,9 @@ usage() {
     cat <<EOF
 $0: illegal subcommand -- $1
 usage: shv [FLAGS] [SUBCOMMAND] [ARGS]
-to have more info see: https://github.com/saccarosium/shell-velocity/blob/main/docs/shv.adoc
+
+more info: 
+  man shv
 EOF
     exit 0
 }
